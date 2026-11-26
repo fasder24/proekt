@@ -126,7 +126,7 @@ $('resetFav')&&($('resetFav').onclick=()=>{if(confirm('Очистить избр
 })();
 
 /* Ночное небо: звёзды, кометы, параллакс */
-(function sky(){const cv=$('sky');if(!cv)return;const g=cv.getContext('2d');let W,H,stars=[],comets=[],nextComet=4,mx=-9999,my=-9999,active=false,sy=0;
+(function sky(){const cv=$('sky');if(!cv||getComputedStyle(cv).display==='none')return;const g=cv.getContext('2d');let W,H,stars=[],comets=[],nextComet=4,mx=-9999,my=-9999,active=false,sy=0;
  function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight;const n=Math.min(170,Math.round(W*H/11000));
   stars=Array.from({length:n},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.9,vy:(Math.random()-.5)*.9,depth:.15+Math.random()*.85,r:Math.random()*1.8+.5}))}
  addEventListener('resize',resize);resize();
