@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>PhysLab — виртуальная научная лаборатория</title>
-<meta name="theme-color" content="#080807">
-<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#101214">
+<meta name="color-scheme" content="dark">
 <meta name="description" content="27 лабораторий физики в браузере: меняешь параметры — видишь результат. Численные модели, сравнение с формулой, экспорт в CSV.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚛</text></svg>">
@@ -14,18 +14,20 @@
 <meta property="og:description" content="27 интерактивных лабораторий: механика, электричество, оптика, кванты. Прямо в браузере.">
 <meta property="og:type" content="website">
 <link rel="stylesheet" href="style.css?v=21">
-<link rel="stylesheet" href="style-v22.css?v=22">
+<link rel="stylesheet" href="style-v22.css?v=23">
 </head>
 <body>
 <canvas id="sky" aria-hidden="true"></canvas>
+<a class="skip-link" href="#main-content">Перейти к содержимому</a>
 <header>
   <div class="logo" onclick="go('home')" aria-label="PhysLab — на главную"><span class="logo-mark">⚛</span><span class="logo-name">PhysLab</span><small>VIRTUAL SCIENCE LAB</small></div>
-  <nav><a data-v="home">Главная</a><a data-v="catalog">Лаборатории</a><a data-v="about">О проекте</a></nav>
+  <nav><a href="#home" data-v="home">Главная</a><a href="#catalog" data-v="catalog">Лаборатории</a><a href="#about" data-v="about">О проекте</a></nav>
+  <button id="paletteBtn" class="search-shortcut" type="button" title="Поиск лабораторий (Ctrl+K)">⌕ Поиск <span class="kbd">Ctrl K</span></button>
   <button id="snd" title="Звук">🔇</button>
   <button id="th" title="Тема">🌓 Авто</button>
   <button id="profileBtn" title="Профиль">👤 <span id="profileName">Войти</span></button>
 </header>
-<main>
+<main id="main-content">
   
 <section class="view" id="v-home">
   <div class="hero">
@@ -82,17 +84,20 @@
 <section class="view" id="v-catalog">
   <div class="catalog-heading"><div><span class="eyebrow">БИБЛИОТЕКА ЭКСПЕРИМЕНТОВ</span><h2>Исследуй физику</h2><p>Выбери модель, измени параметры и проверь закономерности.</p></div><div class="catalog-counter"><b>27</b><span>лабораторий</span></div></div>
   <div class="toolbar">
-    <input id="srch" placeholder="🔍 Поиск лаборатории…">
+    <input id="srch" type="search" aria-label="Поиск лаборатории" placeholder="Поиск лаборатории…">
     <select id="sortSel"><option value="0">По порядку</option><option value="1">По сложности</option><option value="2">По алфавиту</option></select>
-    <button id="luck">🎲 Наугад</button>
+    <button id="clearSearch" type="button">Сбросить</button>
+    <button id="luck" type="button">🎲 Наугад</button>
   </div>
-  <div class="chips" id="chips"></div>
+  <div class="chips" id="chips" aria-label="Фильтр по темам"></div>
+  <p class="catalog-status" id="catalogStatus" role="status" aria-live="polite"></p>
   <div class="catalog-list-heading"><h2>Все лаборатории</h2><span>МОДЕЛИ И ЭКСПЕРИМЕНТЫ</span></div>
   <div class="grid" id="allgrid">
     <div class="card click labcard" data-id="proj" data-name="Бросок под углом" data-tag="Механика" data-diff="2" onclick="go('proj')"><button class="fav" data-id="proj" onclick="event.stopPropagation();toggleFav('proj')">☆</button><div class="ic">🏹</div><span class="tag">Механика · ⭐⭐</span><h3>Бросок под углом</h3><p>Траектория, дальность, сопротивление воздуха.</p></div>
     <div class="card click labcard" data-id="pend" data-name="Маятник" data-tag="Колебания" data-diff="2" onclick="go('pend')"><button class="fav" data-id="pend" onclick="event.stopPropagation();toggleFav('pend')">☆</button><div class="ic">⏱</div><span class="tag">Колебания · ⭐⭐</span><h3>Маятник</h3><p>Период колебаний и сравнение с формулой.</p></div>
     <div class="card click labcard" data-id="ohm" data-name="Закон Ома" data-tag="Электричество" data-diff="1" onclick="go('ohm')"><button class="fav" data-id="ohm" onclick="event.stopPropagation();toggleFav('ohm')">☆</button><div class="ic">💡</div><span class="tag">Электричество · ⭐</span><h3>Закон Ома</h3><p>Последовательное и параллельное соединение.</p></div>
   </div>
+  <p class="catalog-empty" id="catalogEmpty" hidden>По этому запросу ничего не найдено. Измени запрос или сбрось фильтры.</p>
   <section class="lab-map card" id="labMapPanel"><div class="map-head"><div><span class="eyebrow">НАВИГАЦИЯ ПО ЗНАНИЯМ</span><h2>Карта физики</h2><p>Все эксперименты сгруппированы по научным направлениям.</p></div><span class="map-total" id="mapTotal">27 EXPERIMENTS</span></div><div id="labMap" class="lab-map-grid"></div></section>
 </section>
 
@@ -249,14 +254,14 @@
 <!-- Контейнер печатного отчёта: виден только при печати (Ctrl+P / кнопка «Отчёт») -->
 <div id="report" aria-hidden="true"></div>
 
-<script src="script.js?v=22"></script>
-<script src="labs.js?v=22"></script>
-<script src="extra.js?v=22"></script>
-<script src="config.js?v=22"></script>
-<script src="auth.js?v=22"></script>
-<script src="enhancements.js?v=22"></script>
-<script src="v18.js?v=22"></script>
-<script src="v19.js?v=22"></script>
+<script src="script.js?v=23"></script>
+<script src="labs.js?v=23"></script>
+<script src="extra.js?v=23"></script>
+<script src="config.js?v=23"></script>
+<script src="auth.js?v=23"></script>
+<script src="enhancements.js?v=23"></script>
+<script src="v18.js?v=23"></script>
+<script src="v19.js?v=23"></script>
 <!-- Google Identity Services: вход через Google прямо в браузере, без сервера -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </body>

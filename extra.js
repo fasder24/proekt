@@ -17,11 +17,18 @@ function openRandom(){const id=ALL_IDS[Math.floor(Math.random()*ALL_IDS.length)]
 
 /* Поиск, фильтр, сортировка */
 function applyFilters(){
- const q=($('srch').value||'').toLowerCase(),active=$('chips').querySelector('.on'),tag=active?active.dataset.tag:'',favOnly=active&&active.dataset.tag==='__fav__',favs=favSet();
- document.querySelectorAll('.labcard').forEach(c=>{
-  const okQ=c.dataset.name.toLowerCase().includes(q),okTag=!tag||favOnly||c.dataset.tag===tag,okFav=!favOnly||favs.has(c.dataset.id);
+ const q=($('srch').value||'').trim().toLocaleLowerCase('ru'),active=$('chips').querySelector('.on'),tag=active?active.dataset.tag:'',favOnly=active&&active.dataset.tag==='__fav__',favs=favSet();
+ const cards=[...document.querySelectorAll('.labcard')];
+ cards.forEach(c=>{
+  const name=(c.dataset.name||'').toLocaleLowerCase('ru');
+  const okQ=name.includes(q),okTag=!tag||favOnly||c.dataset.tag===tag,okFav=!favOnly||favs.has(c.dataset.id);
   c.style.display=(okQ&&okTag&&okFav)?'':'none'});
  sortCards();
+ const visible=cards.filter(c=>c.style.display!=='none').length;
+ const status=$('catalogStatus'),empty=$('catalogEmpty');
+ if(status)status.textContent='Показано '+visible+' из '+cards.length+' лабораторий';
+ if(empty)empty.hidden=visible!==0;
+ if($('clearSearch'))$('clearSearch').disabled=!q&&!tag;
 }
 function sortCards(){const grid=$('allgrid'),mode=$('sortSel').value,cards=[...grid.children];
  if(mode==='0')cards.sort((a,b)=>ALL_IDS.indexOf(a.dataset.id)-ALL_IDS.indexOf(b.dataset.id));
@@ -29,11 +36,15 @@ function sortCards(){const grid=$('allgrid'),mode=$('sortSel').value,cards=[...g
  else if(mode==='2')cards.sort((a,b)=>a.dataset.name.localeCompare(b.dataset.name,'ru'));
  cards.forEach(c=>grid.appendChild(c));
 }
-(function initChips(){const tags=[...new Set(ALL_IDS.map(id=>{const c=document.querySelector(`.labcard[data-id="${id}"]`);return c&&c.dataset.tag}))].filter(Boolean);
- $('chips').innerHTML='<span class="chip on" data-tag="">Все</span>'+tags.map(t=>`<span class="chip" data-tag="${t}">${t}</span>`).join('')+'<span class="chip" data-tag="__fav__">★ Избранное</span>';
- $('chips').onclick=e=>{if(e.target.classList.contains('chip')){$('chips').querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));e.target.classList.add('on');applyFilters()}};
+(function initChips(){const tags=[...new Set(ALL_IDS.map(id=>{const c=document.querySelector('.labcard[data-id="'+id+'"]');return c&&c.dataset.tag}))].filter(Boolean);
+ const make=(tag,label,on=false)=>'<button type="button" class="chip'+(on?' on':'')+'" data-tag="'+tag+'" aria-pressed="'+on+'">'+label+'</button>';
+ $('chips').innerHTML=make('','Все',true)+tags.map(t=>make(t,t)).join('')+make('__fav__','★ Избранное');
+ $('chips').onclick=e=>{const chip=e.target.closest('.chip');if(!chip)return;
+  $('chips').querySelectorAll('.chip').forEach(c=>{const on=c===chip;c.classList.toggle('on',on);c.setAttribute('aria-pressed',String(on))});
+  applyFilters()};
 })();
 $('srch').oninput=applyFilters;$('sortSel').onchange=sortCards;
+$('clearSearch')&&($('clearSearch').onclick=()=>{$('srch').value='';$('chips').querySelectorAll('.chip').forEach(c=>{const on=c.dataset.tag==='';c.classList.toggle('on',on);c.setAttribute('aria-pressed',String(on))});$('sortSel').value='0';applyFilters();$('srch').focus()});
 $('luck').onclick=openRandom;
 
 /* Экспорт в CSV */
@@ -115,7 +126,7 @@ $('resetFav')&&($('resetFav').onclick=()=>{if(confirm('Очистить избр
 })();
 
 /* Ночное небо: звёзды, кометы, параллакс */
-(function sky(){const cv=$('sky');if(!cv)return;const g=cv.getContext('2d');let W,H,stars=[],comets=[],nextComet=4,mx=-9999,my=-9999,active=false,sy=0;
+(function sky(){const cv=$('sky');if(!cv||getComputedStyle(cv).display==='none')return;const g=cv.getContext('2d');let W,H,stars=[],comets=[],nextComet=4,mx=-9999,my=-9999,active=false,sy=0;
  function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight;const n=Math.min(170,Math.round(W*H/11000));
   stars=Array.from({length:n},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.9,vy:(Math.random()-.5)*.9,depth:.15+Math.random()*.85,r:Math.random()*1.8+.5}))}
  addEventListener('resize',resize);resize();

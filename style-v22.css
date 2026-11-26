@@ -245,3 +245,27 @@ footer{border-top:1px solid rgba(220,224,218,.07)!important}
 @media(prefers-reduced-motion:reduce){
  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
 }
+
+
+/* v23 polish: keyboard navigation, clear catalog feedback, compact responsive controls */
+.skip-link{position:fixed;z-index:1000;top:-60px;left:14px;padding:10px 14px;background:#d4c6a5;color:#151719;border-radius:8px;font-weight:700}
+.skip-link:focus{top:12px}
+.search-shortcut{display:inline-flex;align-items:center;gap:9px;white-space:nowrap}
+.search-shortcut .kbd{font:600 10px "DM Mono",monospace;color:#b4a27c;border-color:rgba(180,162,124,.24);background:#171b1d}
+.catalog-status{min-height:20px;margin:8px 2px 12px;color:#8f9691;font:11px "DM Mono",monospace;letter-spacing:.04em}
+.catalog-empty{padding:28px 20px;text-align:center;color:#a5aaa5;background:#191e20;border:1px dashed rgba(220,224,218,.18);border-radius:12px}
+.catalog-empty[hidden]{display:none!important}
+button.chip{cursor:pointer;font:600 12px "DM Sans",sans-serif;padding:7px 12px;background:#1b2022;color:#aeb3ae;border:1px solid rgba(220,224,218,.10);border-radius:7px;box-shadow:none}
+button.chip:hover{background:#252b2d;border-color:rgba(155,137,101,.35);transform:none}
+button.chip.on{background:#343128;color:#d6c7a5;border-color:rgba(155,137,101,.42)}
+button.chip:focus-visible{outline:2px solid #9b8965;outline-offset:2px}
+#clearSearch:disabled{opacity:.42;cursor:default;transform:none}
+#clearSearch:not(:disabled){color:#c9bb99;border-color:rgba(155,137,101,.28)}
+@media(max-width:700px){
+ .search-shortcut{padding:7px 9px;font-size:11px}
+ .search-shortcut .kbd{display:none}
+ .catalog-status{margin-bottom:8px}
+}
+@media(prefers-reduced-motion:reduce){
+ .view.on{animation:none}
+}
