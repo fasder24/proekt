@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PhysLab — виртуальная научная лаборатория</title>
+<meta name="theme-color" content="#080807">
+<meta name="color-scheme" content="dark light">
+<meta name="description" content="27 лабораторий физики в браузере: меняешь параметры — видишь результат. Численные модели, сравнение с формулой, экспорт в CSV.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚛</text></svg>">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta property="og:title" content="PhysLab — лаборатория физики">
+<meta property="og:description" content="27 интерактивных лабораторий: механика, электричество, оптика, кванты. Прямо в браузере.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="style.css?v=21">
+</head>
+<body>
+<canvas id="sky" aria-hidden="true"></canvas>
+<header>
+  <div class="logo" onclick="go('home')" aria-label="PhysLab — на главную"><span class="logo-mark">⚛</span><span class="logo-name">PhysLab</span><small>VIRTUAL SCIENCE LAB</small></div>
+  <nav><a data-v="home">Главная</a><a data-v="catalog">Лаборатории</a><a data-v="about">О проекте</a></nav>
+  <button id="snd" title="Звук">🔇</button>
+  <button id="th" title="Тема">🌓 Авто</button>
+  <button id="profileBtn" title="Профиль">👤 <span id="profileName">Войти</span></button>
+</header>
+<main>
+  
+<section class="view" id="v-home">
+  <div class="hero">
+    <canvas id="hero3d" aria-label="Анимированная 3D-модель атома"></canvas>
+    <div class="hero-in">
+      <div class="hero-kicker"><span class="hero-kicker-dot"></span> ВИРТУАЛЬНАЯ НАУЧНАЯ ЛАБОРАТОРИЯ <span class="hero-kicker-line"></span></div>
+      <h1>Физика <span>на опытах</span></h1>
+      <p>Меняй параметры, запускай симуляции и смотри, что получается. Всё в браузере, ничего ставить не надо.</p>
+      <div class="hero-btns">
+        <button class="p" onclick="go('catalog')">Открыть лаборатории →</button>
+        <button class="ghost" onclick="openRandom()">🎲 Наугад</button>
+      </div>
+      <div class="stats">
+        <div><b>27</b><span>лабораторий</span></div>
+        <div><b>11</b><span>тем</span></div>
+        <div><b>0 ₽</b><span>бесплатно</span></div>
+      </div>
+      <div class="daily" id="dailyCard" style="display:none"></div>
+      <div style="margin-top:20px"><button id="contBtn" class="ghost" style="display:none">▶ Продолжить</button></div>
+    </div>
+  </div>
+  <section class="quick-lab card" aria-labelledby="quickLabTitle">
+    <div class="quick-copy">
+      <span class="eyebrow"><i></i> ИНТЕРАКТИВНЫЙ ЭКСПЕРИМЕНТ</span>
+      <h2 id="quickLabTitle">Проверь физику <span>в действии</span></h2>
+      <p>Измени скорость и угол броска — траектория, время полёта и дальность пересчитаются прямо здесь.</p>
+      <div class="quick-controls">
+        <label for="homeSpeed">Начальная скорость <b id="homeSpeedValue">20 м/с</b></label>
+        <input id="homeSpeed" type="range" min="5" max="40" value="20" step="1">
+        <label for="homeAngle">Угол броска <b id="homeAngleValue">45°</b></label>
+        <input id="homeAngle" type="range" min="10" max="80" value="45" step="1">
+      </div>
+      <div class="quick-results">
+        <div><span>Дальность</span><b id="homeRange">40,8 м</b></div>
+        <div><span>Время полёта</span><b id="homeFlight">2,88 с</b></div>
+        <div><span>Макс. высота</span><b id="homeHeight">10,2 м</b></div>
+      </div>
+      <button class="p" onclick="go('proj')">Открыть полную лабораторию <span aria-hidden="true">↗</span></button>
+    </div>
+    <div class="quick-visual">
+      <div class="quick-visual-head"><span>МОДЕЛЬ ДВИЖЕНИЯ</span><span class="live-dot">LIVE</span></div>
+      <canvas id="homeLabCanvas" width="720" height="440" aria-label="Траектория тела, брошенного под углом"></canvas>
+      <div class="quick-legend"><span><i class="legend-path"></i> Траектория</span><span><i class="legend-vector"></i> Вектор скорости</span></div>
+    </div>
+  </section>
+  <div class="section-intro"><span class="eyebrow">ПОЧЕМУ PHYSLAB</span><h2>Не просто читать. <span>Исследовать.</span></h2><p>Меняй условия, наблюдай закономерности и проверяй свои гипотезы.</p></div>
+  <div class="grid feat">
+    <div class="card"><div class="ic">🎯</div><h3>Наглядно</h3><p>Меняешь угол — сразу видишь новую траекторию.</p></div>
+    <div class="card"><div class="ic">📐</div><h3>С числами</h3><p>Симуляция сравнивается с формулой — показывается погрешность. Теорию можно проверить.</p></div>
+    <div class="card"><div class="ic">⌨️</div><h3>Удобно</h3><p>Пауза, перемотка, полный экран. Поиск по лабораториям — Ctrl+K.</p></div>
+  </div>
+</section>
+
+<section class="view" id="v-catalog">
+  <div class="catalog-heading"><div><span class="eyebrow">БИБЛИОТЕКА ЭКСПЕРИМЕНТОВ</span><h2>Исследуй физику</h2><p>Выбери модель, измени параметры и проверь закономерности.</p></div><div class="catalog-counter"><b>27</b><span>лабораторий</span></div></div>
+  <div class="toolbar">
+    <input id="srch" placeholder="🔍 Поиск лаборатории…">
+    <select id="sortSel"><option value="0">По порядку</option><option value="1">По сложности</option><option value="2">По алфавиту</option></select>
+    <button id="luck">🎲 Наугад</button>
+  </div>
+  <div class="chips" id="chips"></div>
+  <div class="catalog-list-heading"><h2>Все лаборатории</h2><span>МОДЕЛИ И ЭКСПЕРИМЕНТЫ</span></div>
+  <div class="grid" id="allgrid">
+    <div class="card click labcard" data-id="proj" data-name="Бросок под углом" data-tag="Механика" data-diff="2" onclick="go('proj')"><button class="fav" data-id="proj" onclick="event.stopPropagation();toggleFav('proj')">☆</button><div class="ic">🏹</div><span class="tag">Механика · ⭐⭐</span><h3>Бросок под углом</h3><p>Траектория, дальность, сопротивление воздуха.</p></div>
+    <div class="card click labcard" data-id="pend" data-name="Маятник" data-tag="Колебания" data-diff="2" onclick="go('pend')"><button class="fav" data-id="pend" onclick="event.stopPropagation();toggleFav('pend')">☆</button><div class="ic">⏱</div><span class="tag">Колебания · ⭐⭐</span><h3>Маятник</h3><p>Период колебаний и сравнение с формулой.</p></div>
+    <div class="card click labcard" data-id="ohm" data-name="Закон Ома" data-tag="Электричество" data-diff="1" onclick="go('ohm')"><button class="fav" data-id="ohm" onclick="event.stopPropagation();toggleFav('ohm')">☆</button><div class="ic">💡</div><span class="tag">Электричество · ⭐</span><h3>Закон Ома</h3><p>Последовательное и параллельное соединение.</p></div>
+  </div>
+  <section class="lab-map card" id="labMapPanel"><div class="map-head"><div><span class="eyebrow">НАВИГАЦИЯ ПО ЗНАНИЯМ</span><h2>Карта физики</h2><p>Все эксперименты сгруппированы по научным направлениям.</p></div><span class="map-total" id="mapTotal">27 EXPERIMENTS</span></div><div id="labMap" class="lab-map-grid"></div></section>
+</section>
+
+<section class="view" id="v-lab">
+  <button class="back" onclick="go('catalog')">← Назад</button>
+  <h2 id="lt"></h2>
+  <div class="lab">
+    <div class="lab-main">
+      <div class="sim-stage"><canvas id="lc" width="700" height="400"></canvas><div class="science-hud" id="scienceHud"><span><i></i> LIVE MODEL</span><b id="hudClock">t = 0.00 s</b><small>PHYSICS ENGINE · REAL-TIME</small></div></div><div class="live-chart-wrap"><div class="chart-title"><b>ГРАФИК ЭКСПЕРИМЕНТА</b><span>LIVE DATA</span></div><canvas id="liveChart" width="900" height="190"></canvas></div>
+      <div class="ctrls">
+        <button class="pausebtn" onclick="togglePause()">⏸ Пауза</button>
+        <button id="lstep" title="Один шаг модели">⏭ Шаг</button>
+        <label class="spd">Скорость <input type="range" id="lspeed" min="0.25" max="2" step="0.25" value="1"><b id="lspeedv">1×</b></label>
+        <button id="lfull" title="Полный экран">⛶ Экран</button>
+      </div>
+    </div>
+    <div class="card"><div id="lp"></div>
+      <div class="btnrow"><button class="p" id="lr">↻ Перезапуск</button><button id="lcmp" title="Заморозить текущий кадр и сравнить с новым запуском">👻 Сравнить</button><button id="lcsv">⬇ CSV</button><button id="lprn" title="Сформировать печатный отчёт по лаборатории">🖨 Отчёт</button><button id="lshr">🔗 Поделиться</button></div>
+      <div class="res" id="lo"></div></div>
+  </div>
+  <h2>Теория</h2>
+  <div class="card" id="ltx"></div>
+</section>
+
+<section class="view" id="v-proj">
+  <button class="back" onclick="go('catalog')">← Назад</button>
+  <h2>🏹 Бросок под углом</h2>
+  <div class="lab">
+    <canvas id="cp" width="700" height="400"></canvas>
+    <div class="card">
+      <label>Скорость <b id="pvv"></b></label><input type="range" id="pv" min="5" max="40" value="20">
+      <label>Угол <b id="pav"></b></label><input type="range" id="pa" min="5" max="85" value="45">
+      <label>Высота <b id="phv"></b></label><input type="range" id="ph" min="0" max="20" value="0">
+      <label>Сопротивление воздуха <b id="pkv"></b></label><input type="range" id="pk" min="0" max="10" value="0">
+      <div class="btnrow"><button class="p" id="pgo">▶ Запуск</button><button class="pausebtn" onclick="togglePause()">⏸ Пауза</button><button id="pcmp" title="Заморозить первую траекторию и сравнить с новой">👻 Сравнить</button><button id="pcsv">⬇ CSV</button><button id="pprn" title="Сформировать печатный отчёт по лаборатории">🖨 Отчёт</button><button id="pshr">🔗 Поделиться</button></div>
+      <div class="res"><div>Дальность<b id="rL">–</b></div><div>Время полёта<b id="rT">–</b></div><div>Макс. высота<b id="rH">–</b></div><div>Отклонение от теории<b id="rE">–</b></div></div>
+    </div>
+  </div>
+  <h2>Теория</h2>
+  <div class="card"><p>Без сопротивления воздуха — это равномерное движение по горизонтали и равноускоренное по вертикали (g = 9,81 м/с²).</p>
+  <div class="formula">x = v₀·cosα·t &nbsp; y = h + v₀·sinα·t − g·t²/2</div>
+  <p>С сопротивлением аналитического решения нет, поэтому считаем численно (шаг dt = 0,001 с, метод Эйлера). При k = 0 сверяем с формулой — отклонение должно быть маленьким.</p></div>
+</section>
+
+<section class="view" id="v-pend">
+  <button class="back" onclick="go('catalog')">← Назад</button>
+  <h2>⏱ Маятник</h2>
+  <div class="lab">
+    <canvas id="cm" width="700" height="400"></canvas>
+    <div class="card">
+      <label>Длина <b id="mlv"></b></label><input type="range" id="ml" min="0.3" max="3" step="0.1" value="1">
+      <label>Начальный угол <b id="mav"></b></label><input type="range" id="ma" min="5" max="80" value="15">
+      <div class="btnrow"><button class="p" id="mgo">↻ Перезапуск</button><button class="pausebtn" onclick="togglePause()">⏸ Пауза</button><button id="mprn" title="Сформировать печатный отчёт по лаборатории">🖨 Отчёт</button><button id="mshr">🔗 Поделиться</button></div>
+      <div class="res"><div>Период (формула)<b id="mT">–</b></div><div>Период (симуляция)<b id="mS">–</b></div><div>Отклонение<b id="mE">–</b></div><div>Время<b id="mt">0</b></div></div>
+    </div>
+  </div>
+  <h2>Теория</h2>
+  <div class="card"><div class="formula">T = 2π·√(L / g)</div><p>Формула работает для малых углов. Увеличь начальный угол до 80° — отклонение симуляции от формулы вырастет: реальный период больше.</p></div>
+</section>
+
+<section class="view" id="v-ohm">
+  <button class="back" onclick="go('catalog')">← Назад</button>
+  <h2>💡 Закон Ома</h2>
+  <div class="lab">
+    <div class="card" style="grid-column:1/-1;max-width:520px">
+      <label>Напряжение источника <b id="ouv"></b></label><input type="range" id="ou" min="1" max="24" value="12">
+      <label>R₁ <b id="o1v"></b></label><input type="range" id="o1" min="1" max="100" value="20">
+      <label>R₂ <b id="o2v"></b></label><input type="range" id="o2" min="1" max="100" value="30">
+      <label>Соединение</label><select id="om"><option value="s">Последовательное</option><option value="p">Параллельное</option></select>
+      <div class="res"><div>Общее R<b id="oR">–</b></div><div>Общий ток I<b id="oI">–</b></div><div>Ток через R₁<b id="oI1">–</b></div><div>Ток через R₂<b id="oI2">–</b></div><div>Напряжение на R₁<b id="oU1">–</b></div><div>Мощность<b id="oP">–</b></div></div>
+      <div class="btnrow"><button id="oprn" title="Сформировать печатный отчёт по лаборатории">🖨 Отчёт</button></div>
+    </div>
+  </div>
+  <h2>Теория</h2>
+  <div class="card"><div class="formula">I = U / R &nbsp; Послед.: R = R₁ + R₂ &nbsp; Паралл.: R = R₁·R₂/(R₁+R₂) &nbsp; P = U·I</div></div>
+</section>
+
+<section class="view" id="v-about">
+  <h2>О проекте</h2>
+  <div class="card"><p><b>Зачем:</b> физику проще понимать, когда можно покрутить параметры и увидеть результат. Здесь это работает прямо в браузере — без установки и без оборудования.</p>
+  <p><b>Как устроено:</b> каждая лаборатория — численная модель (метод Эйлера или РК4) с графиком на Canvas. Результат сравнивается с точной формулой, показывается погрешность.</p>
+  <p><b>Что внутри:</b> 27 лабораторий по механике, колебаниям, электричеству, оптике, теплоте и квантам. Поиск, избранное, экспорт в CSV, печатный отчёт.</p>
+  <p><b>Технологии:</b> HTML, CSS, JavaScript (Canvas), Python (Flask) + SQLite, вход через Google (OAuth).</p>
+  <p><b>Автор:</b> [твоё имя], 10 класс. <b>Руководитель:</b> [ФИО].</p></div>
+  <div class="card" style="margin-top:16px"><p>Избранное и прогресс сохраняются в аккаунте.</p><button id="resetFav">Очистить избранное</button></div>
+  <div class="card" style="margin-top:16px"><p><b>Про безопасность.</b> Пароли хранятся как хеши. Запросы к базе параметризованы, ввод проверяется на сервере — SQL-инъекции не пройдут.</p></div>
+</section>
+</main>
+<footer>PhysLab · школьный проект</footer>
+
+<div class="palette" id="palette">
+  <div class="palette-box">
+    <input id="paletteInput" placeholder="Поиск лаборатории… (Enter — открыть, Esc — закрыть)" autocomplete="off">
+    <ul id="paletteList"></ul>
+  </div>
+</div>
+
+<!-- Модальное окно профиля: регистрация / вход -->
+<div class="modal" id="authModal">
+  <div class="modal-box">
+    <button class="modal-x" onclick="closeAuth()" title="Закрыть">✕</button>
+    <h2 id="authTitle">Регистрация</h2>
+    <p class="auth-sub" id="authSub">Зарегистрируйся, чтобы открывать лаборатории.</p>
+    <form id="authForm" autocomplete="off" novalidate>
+      <label class="field" id="nameField"><span>Имя</span><input id="fName" type="text" maxlength="24" placeholder="Как тебя зовут?" autocomplete="off"></label>
+      <label class="field"><span>Логин</span><input id="fLogin" type="text" maxlength="24" placeholder="латиница, цифры, _" autocomplete="off"></label>
+      <label class="field"><span>Пароль</span><input id="fPass" type="password" maxlength="64" placeholder="минимум 6 символов" autocomplete="off"></label>
+      <div class="auth-err" id="authErr"></div>
+      <button type="submit" class="p" id="authSubmit" style="width:100%">Создать аккаунт</button>
+    </form>
+    <div class="google-area">
+      <div id="gsiButton" style="display:none"></div>
+      <button type="button" class="google" id="googleBtn" onclick="googleLogin()">
+        <span class="g-logo">G</span> Продолжить с Google
+      </button>
+    </div>
+    <div class="auth-switch"><span id="authSwitchText">Уже есть аккаунт?</span> <a id="authSwitch">Войти</a></div>
+  </div>
+</div>
+
+<!-- Окно профиля: компактное, горизонтальное -->
+<div class="modal" id="profileModal">
+  <div class="modal-box prof-box">
+    <button class="modal-x" onclick="closeProfile()" title="Закрыть">✕</button>
+    <div class="prof-left">
+      <div class="prof-head"><div class="prof-ava" id="profAva">👤</div>
+        <div><h2 id="profName" style="margin:0;font-size:18px"></h2><p class="auth-sub" style="margin:2px 0 0;font-size:12px" id="profLogin"></p></div></div>
+      <div class="prof-stats">
+        <div><b id="profDone">0</b><span>открыто</span></div>
+        <div><b id="profFav">0</b><span>в избранном</span></div>
+      </div>
+      <div class="prof-bar"><div id="profBar"></div></div>
+      <div class="btnrow" style="margin-top:8px">
+        <button id="expBtn" title="Скачать избранное и прогресс в файл">⬇ Бэкап</button>
+        <button id="impBtn" title="Загрузить данные из файла">⬆ Загрузить</button>
+      </div>
+      <input type="file" id="impFile" accept=".json,application/json" style="display:none">
+    </div>
+    <div class="prof-right">
+      <div class="prof-edit" style="margin-top:0;border:none;padding:0">
+        <h3>Настройки</h3>
+        <label class="field"><span>Имя</span><input id="eName" type="text" maxlength="24" autocomplete="off"></label>
+        <label class="field"><span>Старый пароль</span><input id="eCur" type="password" maxlength="64" autocomplete="off"></label>
+        <label class="field"><span>Новый пароль</span><input id="eNew" type="password" maxlength="64" autocomplete="off"></label>
+        <div class="auth-err" id="editErr"></div>
+        <button id="saveBtn" class="p" style="width:100%;margin-top:8px;font-size:13px">Сохранить</button>
+        <button id="logoutBtn" class="ghost" style="width:100%;margin-top:8px;font-size:13px">Выйти</button>
+        <button class="ghost" style="width:100%;margin-top:8px;font-size:13px" onclick="closeProfile()">Закрыть</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Контейнер печатного отчёта: виден только при печати (Ctrl+P / кнопка «Отчёт») -->
+<div id="report" aria-hidden="true"></div>
+
+<script src="script.js?v=19"></script>
+<script src="labs.js?v=19"></script>
+<script src="extra.js?v=19"></script>
+<script src="config.js?v=19"></script>
+<script src="auth.js?v=19"></script>
+<script src="enhancements.js?v=19"></script>
+<script src="v18.js?v=19"></script>
+<script src="v19.js?v=20"></script>
+<!-- Google Identity Services: вход через Google прямо в браузере, без сервера -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+</body>
+</html>
