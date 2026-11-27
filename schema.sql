@@ -38,3 +38,18 @@ CREATE TABLE IF NOT EXISTS rate_limits (
   window_start INTEGER NOT NULL,
   count INTEGER NOT NULL
 );
+
+ 
+-- Cloud Sync: one server-side snapshot per account and privacy-controlled leaderboard.
+CREATE TABLE IF NOT EXISTS user_exam_state (
+  user_login TEXT PRIMARY KEY REFERENCES users(login) ON DELETE CASCADE,
+  state_json TEXT NOT NULL,
+  answers_total INTEGER NOT NULL DEFAULT 0,
+  correct_total INTEGER NOT NULL DEFAULT 0,
+  variants_total INTEGER NOT NULL DEFAULT 0,
+  best_points INTEGER NOT NULL DEFAULT 0,
+  leaderboard_public INTEGER NOT NULL DEFAULT 0,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_user_exam_state_leaderboard
+  ON user_exam_state(leaderboard_public,best_points DESC,correct_total DESC);
