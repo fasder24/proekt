@@ -37,11 +37,11 @@ function sameOrigin(request) {
   const origin = request.headers.get("Origin");
   return !origin || origin === new URL(request.url).origin;
 }
-async function readJson(request) {
+async function readJson(request, maxBytes = 12000) {
   const type = request.headers.get("content-type") || "";
   if (!type.includes("application/json")) throw new Error("Ожидается JSON");
   const text = await request.text();
-  if (text.length > 12000) throw new Error("Слишком большой запрос");
+  if (text.length > maxBytes) throw new Error("Слишком большой запрос");
   return JSON.parse(text || "{}");
 }
 async function currentUser(request, env) {
@@ -146,6 +146,53 @@ async function api(request, env) {
   const user = await currentUser(request, env);
   if (!user) return json({ ok: false, error: "Требуется вход в аккаунт" }, 401);
 
+  if (path === "/api/exam-state" && method === "GET") {
+    const row = await env.DB.prepare("SELECT state_json,updated_at FROM user_exam_state WHERE user_login=?").bind(user.login).first();
+    let state = null;
+    if (row && row.state_json) { try { state = JSON.parse(row.state_json); } catch (_) { state = null; } }
+    return json({ ok: true, state, updated_at: row ? row.updated_at : null });
+  }
+  if (path === "/api/exam-state" && method === "PUT") {
+    let body; try { body = await readJson(request, 200000); } catch (e) { return json({ ok: false, error: "Некорректный запрос" }, 400); }
+    const state = body.state;
+    if (!state || typeof state !== "object" || Array.isArray(state)) return json({ ok: false, error: "Некорректные данные прогресса" }, 400);
+    const answers = Array.isArray(state.answers) ? state.answers.slice(-5000) : [];
+    const variants = Array.isArray(state.variants) ? state.variants.slice(-500) : [];
+    const safeState = { answers, variants, topics: state.topics && typeof state.topics === "object" ? state.topics : {}, history: Array.isArray(state.history) ? state.history.slice(0,100) : [], today: state.today || {}, streak: Number(state.streak)||0, lastDay: String(state.lastDay||"") };
+    const encoded = JSON.stringify(safeState);
+    if (encoded.length > 180000) return json({ ok: false, error: "История слишком большая для синхронизации" }, 413);
+    const total = answers.length;
+    const correct = answers.filter(x => x && x.correct === true).length;
+    const best = variants.reduce((m,x) => Math.max(m, Math.min(100, Math.max(0, Number(x && x.points)||0))), 0);
+    const now = Math.floor(Date.now()/1000);
+    await env.DB.prepare("INSERT INTO user_exam_state(user_login,state_json,answers_total,correct_total,variants_total,best_points,updated_at) VALUES(?,?,?,?,?,?,?) ON CONFLICT(user_login) DO UPDATE SET state_json=excluded.state_json,answers_total=excluded.answers_total,correct_total=excluded.correct_total,variants_total=excluded.variants_total,best_points=excluded.best_points,updated_at=excluded.updated_at")
+      .bind(user.login, encoded, total, correct, variants.length, best, now).run();
+    return json({ ok: true, updated_at: now, answers_total: total });
+  }
+  if (path === "/api/leaderboard" && method === "GET") {
+    const rows = await env.DB.prepare("SELECT u.name,s.answers_total,s.correct_total,s.variants_total,s.best_points FROM user_exam_state s JOIN users u ON u.login=s.user_login WHERE s.leaderboard_public=1 ORDER BY s.best_points DESC,s.correct_total DESC,s.answers_total DESC LIMIT 50").all();
+    return json({ ok: true, leaderboard: (rows.results||[]).map((x,i)=>({ rank:i+1,name:x.name,answers:x.answers_total,correct:x.correct_total,accuracy:x.answers_total?Math.round(x.correct_total/x.answers_total*100):0,variants:x.variants_total,best_points:x.best_points })) });
+  }
+  if (path === "/api/leaderboard-optin-state" && method === "GET") {
+    const row = await env.DB.prepare("SELECT leaderboard_public FROM user_exam_state WHERE user_login=?").bind(user.login).first();
+    return json({ ok:true, enabled:!!(row && row.leaderboard_public) });
+  }
+  if (path === "/api/leaderboard-optin" && method === "POST") {
+    let body; try { body = await readJson(request); } catch (e) { return json({ ok: false, error: "Некорректный запрос" }, 400); }
+    await env.DB.prepare("UPDATE user_exam_state SET leaderboard_public=? WHERE user_login=?").bind(body.enabled ? 1 : 0,user.login).run();
+    return json({ ok: true, enabled: !!body.enabled });
+  }
+  if (path === "/api/admin/overview" && method === "GET") {
+    const admins = String(env.ADMIN_LOGINS||"").split(",").map(x=>x.trim().toLowerCase()).filter(Boolean);
+    if (!admins.includes(user.login.toLowerCase())) return json({ ok:false,error:"Нет доступа к административной панели" },403);
+    const [users,active,stats,top] = await Promise.all([
+      env.DB.prepare("SELECT COUNT(*) AS total FROM users").first(),
+      env.DB.prepare("SELECT COUNT(*) AS total FROM user_exam_state WHERE updated_at>=?").bind(Math.floor(Date.now()/1000)-30*86400).first(),
+      env.DB.prepare("SELECT COALESCE(SUM(answers_total),0) AS answers,COALESCE(SUM(variants_total),0) AS variants,COALESCE(AVG(CASE WHEN answers_total>0 THEN 1.0*correct_total/answers_total END),0) AS avg_accuracy FROM user_exam_state").first(),
+      env.DB.prepare("SELECT u.name,s.answers_total,s.best_points FROM user_exam_state s JOIN users u ON u.login=s.user_login ORDER BY s.answers_total DESC LIMIT 10").all()
+    ]);
+    return json({ok:true,users:users.total||0,active30:active.total||0,answers:stats.answers||0,variants:stats.variants||0,avgAccuracy:Math.round((stats.avg_accuracy||0)*100),top:(top.results||[])});
+  }
   if (path === "/api/favorites" && method === "GET") {
     const rows = await env.DB.prepare("SELECT lab_id FROM favorites WHERE user_login=?").bind(user.login).all();
     return json({ ok: true, favorites: (rows.results || []).map(x => x.lab_id) });
