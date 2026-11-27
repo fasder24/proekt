@@ -1,0 +1,28 @@
+/* PhysLab v19 — immersive visual studio */
+#v19-launch{position:fixed;right:26px;bottom:24px;z-index:80;display:flex;align-items:center;gap:10px;padding:12px 17px;border:1px solid #6d6247;border-radius:999px;background:linear-gradient(145deg,#29271f,#171914);color:#e0d0a6;box-shadow:0 12px 38px #0008,0 0 24px #a88c4a18;font:700 11px "DM Mono",monospace;letter-spacing:1.3px;cursor:pointer;transition:transform .25s,border-color .25s,box-shadow .25s}
+#v19-launch:hover{transform:translateY(-3px);border-color:#b59b62;box-shadow:0 16px 42px #000a,0 0 28px #b59b6228}
+#v19-launch .v19-sigil{display:grid;place-items:center;width:25px;height:25px;border:1px solid #786b4c;border-radius:50%;font:19px Georgia;color:#d6c18f}
+#v19-overlay{position:fixed;inset:0;z-index:1000;display:none;background:#050705ed;backdrop-filter:blur(18px);color:#e5e8df;font-family:"DM Sans",sans-serif}
+#v19-overlay.open{display:flex;animation:v19Fade .25s ease both}
+@keyframes v19Fade{from{opacity:0}to{opacity:1}}
+.v19-shell{width:min(1500px,100%);height:100%;margin:auto;padding:clamp(14px,2.4vw,34px);display:flex;flex-direction:column;gap:18px;overflow:auto}
+.v19-top{display:flex;justify-content:space-between;align-items:center;gap:15px;border-bottom:1px solid #29291f;padding-bottom:16px}
+.v19-brand{display:flex;align-items:center;gap:12px}.v19-logo{width:42px;height:42px;display:grid;place-items:center;border:1px solid #786b4c;border-radius:13px;color:#d6c18f;font:26px Georgia;background:linear-gradient(145deg,#29271f,#11140f)}
+.v19-brand strong{display:block;font:800 17px Manrope,sans-serif;letter-spacing:.5px}.v19-brand small{display:block;color:#8f907e;font:9px "DM Mono",monospace;letter-spacing:2px;margin-top:3px}
+.v19-close{width:40px;height:40px;border:1px solid #3b3a2e;border-radius:50%;background:#151711;color:#c9c4b1;font-size:23px;cursor:pointer}
+.v19-intro{display:flex;justify-content:space-between;align-items:end;gap:20px}.v19-eyebrow{font:10px "DM Mono",monospace;letter-spacing:2px;color:#a99465}.v19-intro h2{font:700 clamp(25px,4vw,42px) Manrope,sans-serif;letter-spacing:-1.5px;margin:7px 0}.v19-intro p{color:#96988b;font-size:13px;margin:0;max-width:620px}.v19-status{white-space:nowrap;color:#a9aa93;font:10px "DM Mono",monospace}
+.v19-tabs{display:flex;gap:8px;flex-wrap:wrap}.v19-tab{padding:10px 15px;border:1px solid #34352a;border-radius:9px;background:#11140f;color:#a9aa9b;font:11px "DM Mono",monospace;cursor:pointer;transition:.2s}.v19-tab:hover{border-color:#726647;color:#e0d0a6}.v19-tab.active{background:#28251c;border-color:#85744e;color:#e2d0a2;box-shadow:inset 0 0 18px #b59b6210}
+.v19-workspace{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(260px,.8fr);gap:15px;min-height:0;flex:1}
+.v19-stage,.v19-controls{border:1px solid #303126;border-radius:17px;background:linear-gradient(145deg,#151811,#0d100c);box-shadow:0 18px 50px #0005;min-width:0}
+.v19-stage{position:relative;overflow:hidden;min-height:380px;display:flex;flex-direction:column}.v19-stage:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,#8d79421a,transparent 58%)}
+.v19-canvas{display:block;width:100%;height:100%;min-height:340px;flex:1;touch-action:pan-y}
+.v19-stage-label{position:absolute;left:19px;top:17px;z-index:2;color:#8d927f;font:9px "DM Mono",monospace;letter-spacing:1.6px;pointer-events:none}
+.v19-stage-hint{position:absolute;right:17px;bottom:14px;color:#777b6e;font:9px "DM Mono",monospace;pointer-events:none}
+.v19-controls{padding:20px;display:flex;flex-direction:column;gap:16px}.v19-controls h3{margin:0;color:#ddd9c9;font:700 15px Manrope,sans-serif}.v19-controls p{margin:-9px 0 0;color:#888d80;font-size:11px;line-height:1.6}
+.v19-control{display:grid;gap:8px}.v19-control label{display:flex;justify-content:space-between;gap:10px;color:#a9ac9d;font-size:11px}.v19-control output{color:#d5c18f;font:11px "DM Mono",monospace}.v19-control input[type=range]{width:100%;accent-color:#a99465}
+.v19-readouts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:auto}.v19-readout{padding:12px;border:1px solid #2d3025;border-radius:10px;background:#11140f}.v19-readout small{display:block;color:#777e70;font:9px "DM Mono",monospace;letter-spacing:1px}.v19-readout b{display:block;color:#d8d1b9;font:600 16px "DM Mono",monospace;margin-top:6px}
+.v19-actions{display:flex;gap:8px;flex-wrap:wrap}.v19-action{padding:9px 12px;border:1px solid #55503a;border-radius:8px;background:#211f18;color:#d7c79d;font-size:10px;cursor:pointer}.v19-action:hover{background:#302b20}
+.v19-foot{display:flex;justify-content:space-between;gap:15px;color:#6e7468;font:9px "DM Mono",monospace;letter-spacing:.7px}
+@media(max-width:850px){.v19-workspace{grid-template-columns:1fr}.v19-stage{min-height:330px}.v19-canvas{min-height:310px}.v19-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.v19-controls h3,.v19-controls>p,.v19-readouts,.v19-actions{grid-column:1/-1}.v19-readouts{margin-top:0}}
+@media(max-width:560px){#v19-launch{right:13px;bottom:13px;padding:10px 12px}.v19-shell{padding:13px;gap:13px}.v19-intro{align-items:start;flex-direction:column}.v19-status{display:none}.v19-stage{min-height:285px}.v19-canvas{min-height:265px}.v19-controls{padding:15px;grid-template-columns:1fr}.v19-controls h3,.v19-controls>p,.v19-readouts,.v19-actions{grid-column:auto}.v19-foot{font-size:8px;flex-direction:column;gap:4px}}
+@media(prefers-reduced-motion:reduce){#v19-overlay.open{animation:none}#v19-launch{transition:none}}

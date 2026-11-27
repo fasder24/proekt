@@ -1,0 +1,78 @@
+/* PhysLab v19 Visual Studio — self-contained, no dependencies */
+(()=>{'use strict';
+if(window.__PHYSLAB_V19__)return;window.__PHYSLAB_V19__=true;
+const $=id=>document.getElementById(id),TAU=Math.PI*2;
+const state={tab:'cosmos',running:true,t:0,last:0,yaw:.55,pitch:.25,zoom:1,drag:false,px:0,py:0,voltage:12,resistance:24,switchOn:true,quality:1};
+const fmt=(n,d=1)=>Number(n).toFixed(d).replace('.',',');
+const css=document.createElement('link');css.rel='stylesheet';css.href='physlab-v19.css?v=1';document.head.append(css);
+const launch=document.createElement('button');launch.id='v19-launch';launch.innerHTML='<span class="v19-sigil">Φ</span><span>V19 · VISUAL STUDIO</span>';launch.setAttribute('aria-label','Открыть визуальную лабораторию PhysLab v19');
+const overlay=document.createElement('div');overlay.id='v19-overlay';overlay.innerHTML=`
+<div class="v19-shell" role="dialog" aria-modal="true" aria-label="PhysLab Visual Studio">
+ <header class="v19-top"><div class="v19-brand"><span class="v19-logo">Φ</span><span><strong>PHYSLAB / VISUAL STUDIO</strong><small>INTERACTIVE PHYSICS ENVIRONMENT · V19</small></span></div><button class="v19-close" id="v19-close" aria-label="Закрыть">×</button></header>
+ <section class="v19-intro"><div><div class="v19-eyebrow">ИССЛЕДУЙ ЗАКОНЫ ВСЕЛЕННОЙ</div><h2 id="v19-title">Гравитационная система</h2><p id="v19-description">Исследуй орбиты, меняй массу центрального тела и наблюдай движение спутников в объёмной сцене.</p></div><div class="v19-status">● SIMULATION ONLINE</div></section>
+ <nav class="v19-tabs" aria-label="Лаборатории"><button class="v19-tab active" data-v19-tab="cosmos">01 / КОСМОС</button><button class="v19-tab" data-v19-tab="quantum">02 / КВАНТЫ</button><button class="v19-tab" data-v19-tab="optics">03 / ОПТИКА</button><button class="v19-tab" data-v19-tab="circuit">04 / ЭЛЕКТРИЧЕСТВО</button></nav>
+ <div class="v19-workspace"><section class="v19-stage"><span class="v19-stage-label" id="v19-stage-label">GRAVITY FIELD / 3D VIEW</span><canvas class="v19-canvas" id="v19-canvas" width="1000" height="650"></canvas><span class="v19-stage-hint" id="v19-hint">ПЕРЕТАСКИВАЙ ДЛЯ ВРАЩЕНИЯ · КОЛЕСО ДЛЯ МАСШТАБА</span></section>
+ <aside class="v19-controls"><h3 id="v19-control-title">Параметры системы</h3><p id="v19-control-copy">Все изменения применяются мгновенно к модели.</p><div id="v19-control-list"></div><div class="v19-actions" id="v19-actions"></div><div class="v19-readouts" id="v19-readouts"></div></aside></div>
+ <footer class="v19-foot"><span>PHYSLAB · ВИЗУАЛЬНАЯ ФИЗИКА</span><span>МОДЕЛИ УЧЕБНЫЕ · НЕ ЯВЛЯЮТСЯ ТОЧНЫМ ПРОГНОЗОМ РЕАЛЬНЫХ СИСТЕМ</span></footer>
+</div>`;
+document.body.append(launch,overlay);
+const canvas=$('v19-canvas'),ctx=canvas.getContext('2d');
+const configs={
+cosmos:{title:'Гравитационная система',desc:'Исследуй орбиты, меняй массу центрального тела и наблюдай движение спутников в объёмной сцене.',label:'GRAVITY FIELD / 3D VIEW',hint:'ПЕРЕТАСКИВАЙ ДЛЯ ВРАЩЕНИЯ · КОЛЕСО ДЛЯ МАСШТАБА',controls:[['mass','Масса звезды','0.5','3','0.1','1.4','M☉'],['speed','Орбитальная скорость','0.4','2','0.05','1','×'],['tilt','Наклон орбиты','0','65','1','24','°']],reads:[['period','ОРБИТАЛЬНЫЙ ПЕРИОД'],['gravity','УСКОРЕНИЕ'],['distance','РАДИУС ОРБИТЫ']]},
+quantum:{title:'Квантовая лаборатория',desc:'Загляни в микромир: электронное облако, энергетические уровни и вероятность обнаружения частицы.',label:'ELECTRON PROBABILITY / ATOM',hint:'ИЗМЕНЯЙ ЭНЕРГИЮ · НАБЛЮДАЙ ЗА ЭЛЕКТРОННЫМ ОБЛАКОМ',controls:[['energy','Энергетический уровень','1','5','1','2','n'],['density','Плотность облака','30','100','5','65','%'],['charge','Заряд ядра','1','4','1','1','+']],reads:[['level','ЭНЕРГИЯ УРОВНЯ'],['radius','СРЕДНИЙ РАДИУС'],['prob','ПЛОТНОСТЬ ОБЛАКА']]},
+optics:{title:'Оптическая лаборатория',desc:'Настраивай линзу и положение предмета. Следи за ходом лучей, фокусом и построением изображения.',label:'RAY TRACING / THIN LENS',hint:'МЕНЯЙ ФОКУС И РАССТОЯНИЕ · СЛЕДИ ЗА ИЗОБРАЖЕНИЕМ',controls:[['focal','Фокусное расстояние','5','24','1','12','см'],['object','Расстояние до предмета','8','60','1','36','см'],['height','Высота предмета','10','50','1','28','см']],reads:[['image','РАССТОЯНИЕ ДО ИЗОБРАЖЕНИЯ'],['magnification','УВЕЛИЧЕНИЕ'],['type','ТИП ИЗОБРАЖЕНИЯ']]},
+circuit:{title:'Электрическая лаборатория',desc:'Собирай цепь, включай питание и регулируй сопротивление. Модель показывает ток и мощность по закону Ома.',label:'CIRCUIT DESIGN / DC CURRENT',hint:'МЕНЯЙ НАПРЯЖЕНИЕ И СОПРОТИВЛЕНИЕ · УПРАВЛЯЙ ВЫКЛЮЧАТЕЛЕМ',controls:[['voltage','Напряжение','1','24','1','12','В'],['resistance','Сопротивление','2','100','1','24','Ом']],reads:[['current','СИЛА ТОКА'],['power','МОЩНОСТЬ'],['state','СОСТОЯНИЕ ЦЕПИ']]}
+};
+const values={mass:1.4,speed:1,tilt:24,energy:2,density:65,charge:1,focal:12,object:36,height:28,voltage:12,resistance:24};
+function panel(tab){const c=configs[tab];$('v19-title').textContent=c.title;$('v19-description').textContent=c.desc;$('v19-stage-label').textContent=c.label;$('v19-hint').textContent=c.hint;$('v19-control-title').textContent=tab==='circuit'?'Сборка электрической цепи':'Параметры модели';$('v19-control-copy').textContent='Настраивай систему — визуализация и расчёты обновляются в реальном времени.';
+document.querySelectorAll('[data-v19-tab]').forEach(b=>b.classList.toggle('active',b.dataset.v19Tab===tab));
+$('v19-control-list').innerHTML=c.controls.map(([id,label,min,max,step,def,unit])=>{if(values[id]===undefined)values[id]=+def;return '<div class="v19-control"><label for="v19-'+id+'">'+label+' <output id="v19-out-'+id+'">'+fmt(values[id],step.includes('.')?2:0)+' '+unit+'</output></label><input id="v19-'+id+'" type="range" min="'+min+'" max="'+max+'" step="'+step+'" value="'+values[id]+'"></div>'}).join('');
+$('v19-actions').innerHTML=tab==='circuit'?'<button class="v19-action" id="v19-switch">⏻ '+(state.switchOn?'Отключить цепь':'Включить цепь')+'</button><button class="v19-action" id="v19-reset">Сбросить параметры</button>':'<button class="v19-action" id="v19-pause">'+(state.running?'Ⅱ Пауза':'▶ Продолжить')+'</button><button class="v19-action" id="v19-reset">Сбросить вид</button>';
+$('v19-readouts').innerHTML=c.reads.map(([id,label])=>'<div class="v19-readout"><small>'+label+'</small><b id="v19-read-'+id+'">—</b></div>').join('');
+c.controls.forEach(([id,label,min,max,step,def,unit])=>{const el=$('v19-'+id);el.addEventListener('input',()=>{values[id]=+el.value;$('v19-out-'+id).textContent=fmt(values[id],step.includes('.')?2:0)+' '+unit;draw()})});
+$('v19-pause')?.addEventListener('click',()=>{state.running=!state.running;$('v19-pause').textContent=state.running?'Ⅱ Пауза':'▶ Продолжить'});
+$('v19-reset')?.addEventListener('click',()=>{state.yaw=.55;state.pitch=.25;state.zoom=1;panel(tab)});
+$('v19-switch')?.addEventListener('click',()=>{state.switchOn=!state.switchOn;$('v19-switch').textContent='⏻ '+(state.switchOn?'Отключить цепь':'Включить цепь');draw()});
+draw()}
+function readout(id,val){const e=$('v19-read-'+id);if(e)e.textContent=val}
+function bg(){const w=canvas.width,h=canvas.height;ctx.clearRect(0,0,w,h);const g=ctx.createRadialGradient(w*.5,h*.48,5,w*.5,h*.48,w*.65);g.addColorStop(0,'#1c2118');g.addColorStop(.6,'#10140f');g.addColorStop(1,'#090c09');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);ctx.save();ctx.strokeStyle='#7d805e12';ctx.lineWidth=1;for(let x=0;x<w;x+=48){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke()}for(let y=0;y<h;y+=48){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}ctx.restore()}
+function sphere(x,y,r,base){const g=ctx.createRadialGradient(x-r*.35,y-r*.4,r*.05,x,y,r);g.addColorStop(0,'#f1e4bb');g.addColorStop(.25,base);g.addColorStop(.72,'#665b3c');g.addColorStop(1,'#171912');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();ctx.strokeStyle='#d5c18f35';ctx.lineWidth=1;ctx.stroke()}
+function cosmos(){const w=canvas.width,h=canvas.height,cx=w/2,cy=h/2,m=values.mass,s=values.speed,tilt=values.tilt*Math.PI/180,r=190*state.zoom;const stars=110;for(let i=0;i<stars;i++){const x=(i*173+37)%w,y=(i*293+91)%h;ctx.fillStyle='rgba(202,194,158,'+(0.08+(i%5)*.045)+')';ctx.fillRect(x,y,1.4,1.4)}
+ctx.save();ctx.translate(cx,cy);ctx.rotate(state.yaw);ctx.transform(1,0,0,Math.cos(tilt+state.pitch*.12),0,0);
+for(let ring=0;ring<5;ring++){ctx.beginPath();ctx.ellipse(0,0,r*(.5+ring*.18),r*(.5+ring*.18),0,0,TAU);ctx.strokeStyle='rgba(177,157,103,'+(0.10-ring*.012)+')';ctx.setLineDash([3,10]);ctx.stroke()}
+ctx.setLineDash([]);const a=state.t*.00025*s,px=Math.cos(a)*r,py=Math.sin(a)*r;ctx.strokeStyle='#c1a66b99';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,0,r,r,0,0,a);ctx.stroke();
+const glow=ctx.createRadialGradient(0,0,10,0,0,100);glow.addColorStop(0,'#dfc98b88');glow.addColorStop(1,'#a78d4b00');ctx.fillStyle=glow;ctx.beginPath();ctx.arc(0,0,100,0,TAU);ctx.fill();sphere(0,0,25+8*m,'#b59a5e');sphere(px,py,10,'#8eaa9b');
+ctx.restore();readout('period',fmt(365/Math.sqrt(m)/s,0)+' дн.');readout('gravity',fmt(.00593*m,4)+' м/с²');readout('distance','1,00 а.е.')}
+function quantum(){const w=canvas.width,h=canvas.height,cx=w/2,cy=h/2,level=values.energy,density=values.density,charge=values.charge;const radius=75+level*25;for(let shell=1;shell<=level;shell++){ctx.beginPath();ctx.ellipse(cx,cy,radius*shell/level,radius*shell/level*.76,state.yaw*.2,0,TAU);ctx.strokeStyle='rgba(178,157,104,'+(0.15+shell*.035)+')';ctx.setLineDash([3,7]);ctx.stroke()}ctx.setLineDash([]);
+const cloudN=Math.round(density*4);for(let i=0;i<cloudN;i++){const a=i*2.399963+state.t*.00035*(i%2?1:-1),rr=radius*Math.sqrt(((i*37)%cloudN)/cloudN)*(0.65+0.35*Math.sin(i*12.3));const x=cx+Math.cos(a)*rr,y=cy+Math.sin(a)*rr*.76;const alpha=.08+(i%7)*.018;ctx.fillStyle='rgba(178,193,157,'+alpha+')';ctx.beginPath();ctx.arc(x,y,2+(i%3),0,TAU);ctx.fill()}
+const glow=ctx.createRadialGradient(cx,cy,4,cx,cy,42);glow.addColorStop(0,'#e1cf9c');glow.addColorStop(.35,'#9b8758');glow.addColorStop(1,'#9b875800');ctx.fillStyle=glow;ctx.beginPath();ctx.arc(cx,cy,42,0,TAU);ctx.fill();sphere(cx,cy,16+charge*2,'#b59a5e');
+const angle=state.t*.001;const ex=cx+Math.cos(angle)*radius,ey=cy+Math.sin(angle)*radius*.76;sphere(ex,ey,7,'#a6c2a8');readout('level',(13.6*charge*charge/(level*level)).toFixed(2)+' эВ');readout('radius',fmt(radius/100,2)+' нм');readout('prob',density+'%')}
+function optics(){const w=canvas.width,h=canvas.height,axis=h*.58,lx=w*.51,f=values.focal,u=values.object,ho=values.height;const scale=Math.min(5.2,w/160),ox=lx-u*scale,imx=lx+(f*u/(u-f))*scale,hi=ho*scale*.72,v=f*u/(u-f),mag=-v/u;
+ctx.strokeStyle='#b8b49b66';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(35,axis);ctx.lineTo(w-35,axis);ctx.stroke();
+ctx.strokeStyle='#bba574';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(lx,70);ctx.quadraticCurveTo(lx-28,axis,lx,axis);ctx.quadraticCurveTo(lx+28,h-65,lx,h-65);ctx.stroke();
+ctx.setLineDash([4,7]);ctx.strokeStyle='#b79d66';for(const sign of [-1,1]){ctx.beginPath();ctx.moveTo(lx+sign*f*scale,axis-12);ctx.lineTo(lx+sign*f*scale,axis+12);ctx.stroke()}ctx.setLineDash([]);
+ctx.strokeStyle='#c4a96d';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(ox,axis);ctx.lineTo(ox,axis-hi);ctx.stroke();ctx.fillStyle='#c4a96d';ctx.beginPath();ctx.arc(ox,axis-hi,5,0,TAU);ctx.fill();
+ctx.lineWidth=2;ctx.strokeStyle='#a6c5a5';ctx.beginPath();ctx.moveTo(ox,axis-hi);ctx.lineTo(lx,axis-hi);ctx.lineTo(imx,axis+hi*Math.abs(mag));ctx.stroke();
+ctx.strokeStyle='#d3bd8b';ctx.setLineDash([7,5]);ctx.beginPath();ctx.moveTo(ox,axis-hi);ctx.lineTo(lx,axis);ctx.lineTo(imx,axis+hi*Math.abs(mag));ctx.stroke();ctx.setLineDash([]);
+if(imx>15&&imx<w-15){ctx.strokeStyle='#9fbba0';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(imx,axis);ctx.lineTo(imx,axis+Math.sign(mag)*Math.min(hi*Math.abs(mag),h*.3));ctx.stroke()}
+ctx.fillStyle='#aaa995';ctx.font='13px "DM Mono"';ctx.fillText('F',lx-f*scale-5,axis+23);ctx.fillText('F',lx+f*scale-5,axis+23);ctx.fillText('ЛИНЗА',lx+13,90);readout('image',fmt(Math.abs(v),1)+' см');readout('magnification',fmt(mag,2)+'×');readout('type',v>0?'Действительное':'Мнимое')}
+function circuit(){const w=canvas.width,h=canvas.height,y=h*.49,xs=[w*.16,w*.38,w*.62,w*.84],on=state.switchOn;ctx.strokeStyle=on?'#b59a61':'#626456';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(xs[0],y);ctx.lineTo(xs[1]-25,y);ctx.moveTo(xs[1]+25,y);ctx.lineTo(xs[2]-30,y);ctx.moveTo(xs[2]+30,y);ctx.lineTo(xs[3],y);ctx.lineTo(xs[3],y+90);ctx.lineTo(xs[0],y+90);ctx.lineTo(xs[0],y);ctx.stroke();
+ctx.strokeStyle='#d0bd8e';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(xs[0]-13,y+35);ctx.lineTo(xs[0]+13,y+35);ctx.moveTo(xs[0]-7,y+55);ctx.lineTo(xs[0]+7,y+55);ctx.stroke();ctx.strokeStyle=on?'#b7a16b':'#64675b';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(xs[1]-25,y);ctx.lineTo(xs[1]+20,on?y:y-38);ctx.stroke();
+ctx.fillStyle='#d4c69f';ctx.fillRect(xs[2]-8,y-22,16,44);ctx.fillStyle='#11140f';ctx.fillRect(xs[2]-4,y-15,8,30);ctx.fillStyle='#a9b49c';ctx.font='13px "DM Mono"';ctx.fillText('R = '+values.resistance+' Ω',xs[2]-48,y-40);ctx.fillText('U = '+values.voltage+' V',xs[0]-45,y+125);
+if(on){const I=values.voltage/values.resistance;for(let i=0;i<8;i++){const p=(state.t*.00015+i/8)%1;let x,y0;if(p<.25){x=xs[0]+(xs[1]-xs[0])*p*4;y0=y}else if(p<.5){x=xs[1]+(xs[2]-xs[1])*(p-.25)*4;y0=y}else if(p<.75){x=xs[2]+(xs[3]-xs[2])*(p-.5)*4;y0=y}else{x=xs[3]-(xs[3]-xs[0])*(p-.75)*4;y0=y+90}ctx.fillStyle='#e2d1a2';ctx.beginPath();ctx.arc(x,y0,4,0,TAU);ctx.fill()}readout('current',fmt(I,3)+' А');readout('power',fmt(values.voltage*I,2)+' Вт');readout('state','ЗАМКНУТА')}else{readout('current','0 А');readout('power','0 Вт');readout('state','РАЗОМКНУТА')}}
+function draw(){bg();if(state.tab==='cosmos')cosmos();if(state.tab==='quantum')quantum();if(state.tab==='optics')optics();if(state.tab==='circuit')circuit()}
+function resize(){const rect=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);const w=Math.max(300,Math.round(rect.width*dpr)),h=Math.max(240,Math.round(rect.height*dpr));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;draw()}}
+function frame(t){if(!overlay.classList.contains('open'))return;const dt=state.last?Math.min(50,t-state.last):16;state.last=t;if(state.running)state.t+=dt;if(state.tab==='cosmos'||state.tab==='quantum'||state.tab==='circuit')draw();requestAnimationFrame(frame)}
+launch.addEventListener('click',()=>{overlay.classList.add('open');document.body.style.overflow='hidden';resize();draw();$('v19-close').focus();requestAnimationFrame(frame)});
+function close(){overlay.classList.remove('open');document.body.style.overflow='';launch.focus()}
+$('v19-close').addEventListener('click',close);overlay.addEventListener('click',e=>{if(e.target===overlay)close()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&overlay.classList.contains('open'))close()});
+document.querySelectorAll('[data-v19-tab]').forEach(b=>b.addEventListener('click',()=>{state.tab=b.dataset.v19Tab;panel(state.tab);resize()}));
+canvas.addEventListener('pointerdown',e=>{state.drag=true;state.px=e.clientX;state.py=e.clientY;canvas.setPointerCapture(e.pointerId)});
+canvas.addEventListener('pointermove',e=>{if(!state.drag)return;state.yaw+=(e.clientX-state.px)*.008;state.pitch=Math.max(-1.1,Math.min(1.1,state.pitch+(e.clientY-state.py)*.008));state.px=e.clientX;state.py=e.clientY;draw()});
+canvas.addEventListener('pointerup',()=>state.drag=false);canvas.addEventListener('pointercancel',()=>state.drag=false);
+canvas.addEventListener('wheel',e=>{e.preventDefault();state.zoom=Math.max(.65,Math.min(1.5,state.zoom*(e.deltaY>0?.94:1.06)));draw()},{passive:false});
+new ResizeObserver(resize).observe(canvas);
+window.addEventListener('resize',resize,{passive:true});
+panel('cosmos');requestAnimationFrame(frame);
+})();
