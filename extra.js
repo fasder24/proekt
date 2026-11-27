@@ -125,51 +125,62 @@ $('resetFav')&&($('resetFav').onclick=()=>{if(confirm('Очистить избр
   window.openPalette=open;
 })();
 
-/* Ночное небо: звёзды, кометы, параллакс */
-(function sky(){const cv=$('sky');if(!cv||getComputedStyle(cv).display==='none')return;const g=cv.getContext('2d');let W,H,stars=[],comets=[],nextComet=4,mx=-9999,my=-9999,active=false,sy=0;
- function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight;const n=Math.min(170,Math.round(W*H/11000));
-  stars=Array.from({length:n},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.9,vy:(Math.random()-.5)*.9,depth:.15+Math.random()*.85,r:Math.random()*1.8+.5}))}
- addEventListener('resize',resize);resize();
- addEventListener('scroll',()=>{sy=window.scrollY||window.pageYOffset||0},{passive:true});
- addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;active=true});
- addEventListener('mouseleave',()=>{active=false;mx=my=-9999});
- addEventListener('touchmove',e=>{const t=e.touches[0];if(t){mx=t.clientX;my=t.clientY;active=true}},{passive:true});
- const R=180;
- function frame(){requestAnimationFrame(frame);if(document.hidden)return;
+/* v26: restrained silver particle network */
+(function sky(){
+ const cv=$('sky');if(!cv||getComputedStyle(cv).display==='none')return;
+ const g=cv.getContext('2d',{alpha:true});if(!g)return;
+ let W=0,H=0,D=1,nodes=[],mx=-9999,my=-9999,raf=0;
+ const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ const pointerRadius=190,linkRadius=142;
+ function resize(){
+  D=Math.min(window.devicePixelRatio||1,1.5);W=innerWidth;H=innerHeight;
+  cv.width=Math.round(W*D);cv.height=Math.round(H*D);
+  cv.style.width=W+'px';cv.style.height=H+'px';g.setTransform(D,0,0,D,0,0);
+  const count=Math.min(132,Math.max(48,Math.round(W*H/14500)));
+  nodes=Array.from({length:count},()=>({x:Math.random()*W,y:Math.random()*H,
+   vx:(Math.random()-.5)*.24,vy:(Math.random()-.5)*.24,r:.65+Math.random()*.8,
+   phase:Math.random()*Math.PI*2}));
+  draw();
+ }
+ function draw(){
   g.clearRect(0,0,W,H);
-  const dot=col('--tx')||'#fff',line=col('--ac2')||'#22d3ee',turbo=window.__turbo?6:1;
-  const P=[];
-  for(const s of stars){
-   s.x+=s.vx*turbo;s.y+=s.vy*turbo;
-   if(s.x<-20)s.x=W+20;else if(s.x>W+20)s.x=-20;
-   if(s.y<-20)s.y=H+20;else if(s.y>H+20)s.y=-20;
-   let dy=(s.y-sy*s.depth)%H;if(dy<0)dy+=H;
-   P.push({x:s.x,y:dy,r:s.r});
+  const P=nodes;
+  for(const p of P){
+   if(!reduced){p.x+=p.vx;p.y+=p.vy;
+    if(p.x<-12)p.x=W+12;if(p.x>W+12)p.x=-12;
+    if(p.y<-12)p.y=H+12;if(p.y>H+12)p.y=-12;
+   }
   }
-  g.fillStyle=dot;
-  for(const p of P){g.globalAlpha=.5;g.beginPath();g.arc(p.x,p.y,p.r,0,7);g.fill()}
-  g.globalAlpha=1;
-  /* Кометы */
-  nextComet-=1/60*turbo;
-  if(nextComet<=0){nextComet=7+Math.random()*13;const dir=Math.random()<.5?1:-1;
-   comets.push({x:dir>0?-80:W+80,y:-40-Math.random()*140,vx:dir*(2.6+Math.random()*2.2),vy:1+Math.random()*.9,life:9,len:90+Math.random()*90})}
-  for(const q of comets){
-   q.x+=q.vx*turbo;q.y+=q.vy*turbo;q.life-=1/60;
-   const sp=Math.hypot(q.vx,q.vy)||1,ux=q.vx/sp,uy=q.vy/sp;
-   const grd=g.createLinearGradient(q.x,q.y,q.x-ux*q.len,q.y-uy*q.len);
-   grd.addColorStop(0,'rgba(255,255,255,.95)');grd.addColorStop(.35,'rgba(139,124,255,.55)');grd.addColorStop(1,'rgba(139,124,255,0)');
-   g.strokeStyle=grd;g.lineWidth=2;g.beginPath();g.moveTo(q.x,q.y);g.lineTo(q.x-ux*q.len,q.y-uy*q.len);g.stroke();
-   g.fillStyle='#fff';g.beginPath();g.arc(q.x,q.y,2.4,0,7);g.fill()}
-  comets=comets.filter(q=>q.life>0&&q.x>-260&&q.x<W+260&&q.y<H+260);
-  if(active){
-   for(let i=0;i<P.length;i++){const a=P[i],da=Math.hypot(a.x-mx,a.y-my);
-    if(da<R){g.globalAlpha=(1-da/R)*.9;g.strokeStyle=line;g.lineWidth=1;g.beginPath();g.moveTo(a.x,a.y);g.lineTo(mx,my);g.stroke()}
-    for(let j=i+1;j<P.length;j++){const b=P[j],db=Math.hypot(b.x-mx,b.y-my);
-     if(da<R&&db<R){const d=Math.hypot(a.x-b.x,a.y-b.y);
-      if(d<120){g.globalAlpha=(1-d/120)*.35;g.strokeStyle=line;g.beginPath();g.moveTo(a.x,a.y);g.lineTo(b.x,b.y);g.stroke()}}}}
-   g.globalAlpha=.9;g.fillStyle=line;g.beginPath();g.arc(mx,my,3,0,7);g.fill();g.globalAlpha=1}
+  for(let i=0;i<P.length;i++){
+   const a=P[i];
+   for(let j=i+1;j<P.length;j++){
+    const b=P[j],dx=a.x-b.x,dy=a.y-b.y,d=Math.hypot(dx,dy);
+    if(d<linkRadius){
+     const alpha=(1-d/linkRadius)*.16;
+     g.strokeStyle='rgba(174,187,195,'+alpha.toFixed(3)+')';
+     g.lineWidth=.7;g.beginPath();g.moveTo(a.x,a.y);g.lineTo(b.x,b.y);g.stroke();
+    }
+   }
+   const dm=Math.hypot(a.x-mx,a.y-my);
+   if(dm<pointerRadius){
+    g.strokeStyle='rgba(192,200,206,'+((1-dm/pointerRadius)*.27).toFixed(3)+')';
+    g.lineWidth=.8;g.beginPath();g.moveTo(a.x,a.y);g.lineTo(mx,my);g.stroke();
+   }
   }
- frame();
+  for(const p of P){
+   const dm=Math.hypot(p.x-mx,p.y-my);
+   const pulse=.78+Math.sin(p.phase+(performance.now()||0)*.0007)*.12;
+   g.fillStyle='rgba(205,215,222,'+Math.min(.78,pulse+(dm<pointerRadius?.18:0)).toFixed(3)+')';
+   g.beginPath();g.arc(p.x,p.y,p.r+(dm<pointerRadius?.35:0),0,Math.PI*2);g.fill();
+  }
+ }
+ function frame(){draw();if(!reduced)raf=requestAnimationFrame(frame);}
+ addEventListener('resize',resize,{passive:true});
+ addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY},{passive:true});
+ addEventListener('mouseleave',()=>{mx=my=-9999},{passive:true});
+ addEventListener('touchmove',e=>{const t=e.touches[0];if(t){mx=t.clientX;my=t.clientY}},{passive:true});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelAnimationFrame(raf)}else if(!reduced){cancelAnimationFrame(raf);raf=requestAnimationFrame(frame)}});
+ resize();if(!reduced)raf=requestAnimationFrame(frame);
 })();
 
 /* Опыт дня */
