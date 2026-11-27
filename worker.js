@@ -1,5 +1,6 @@
 const SESSION_DAYS = 30;
-const PBKDF2_ITERATIONS = 310000;
+// Cloudflare Workers WebCrypto currently supports at most 100,000 PBKDF2 iterations.
+const PBKDF2_ITERATIONS = 100000;
 const LOGIN_RE = /^[A-Za-z0-9_]{3,24}$/;
 const NAME_RE = /^[A-Za-zА-Яа-яЁё -]{2,24}$/;
 
