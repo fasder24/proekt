@@ -47,6 +47,9 @@ function renderCabinet(){
  const n=(s.answers||[]).length,c=(s.answers||[]).filter(x=>x.correct).length,v=s.variants||[];
  if($('cabinetMetrics'))$('cabinetMetrics').innerHTML=[['Решено заданий',n],['Правильные',c],['Точность',n?Math.round(c/n*100)+'%':'—'],['Лучший вариант',v.length?Math.max(...v.map(x=>x.points||0))+'%':'—']].map(x=>'<article class="metric-card"><span>'+x[0]+'</span><b>'+x[1]+'</b></article>').join('');
  if($('cabinetAchievements'))$('cabinetAchievements').innerHTML=achievements(s).map(x=>'<article class="achievement-card '+(x[1]?'earned':'')+'"><span>'+(x[1]?'✦':'◇')+'</span><b>'+x[0]+'</b><small>'+(x[1]?'Получено':'Ещё впереди')+'</small></article>').join('');
+ const topicNames={kinematics:'Кинематика',dynamics:'Динамика',energy:'Законы сохранения',statics:'Статика и гидростатика',molecular:'МКТ и термодинамика',thermo:'Электродинамика',electricity:'Электричество'};
+ const weak=Object.entries(s.topics||{}).map(([id,x])=>({id,total:x.total||0,accuracy:x.total?Math.round(x.right/x.total*100):0})).filter(x=>x.total>=3).sort((a,b)=>a.accuracy-b.accuracy).slice(0,3);
+ if($('cabinetPlan'))$('cabinetPlan').innerHTML=weak.length?'<ol class="cloud-plan">'+weak.map((x,i)=>'<li><b>'+esc(topicNames[x.id]||x.id)+'</b><span>Точность '+x.accuracy+'% · '+x.total+' ответов</span><small>'+(x.accuracy<60?'Повтори теорию и реши 10 заданий':x.accuracy<80?'Реши ещё 5–7 заданий для закрепления':'Поддерживай результат контрольной тренировкой')+'</small></li>').join('')+'</ol>':'<p class="cloud-note">Пока недостаточно ответов для точной рекомендации. Реши несколько заданий по разным темам — план сформируется автоматически.</p>';
 }
 async function loadLeaderboard(){
  const box=$('leaderboardTable');if(!box)return;box.innerHTML='<p>Загружаем рейтинг…</p>';
