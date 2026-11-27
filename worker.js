@@ -45,7 +45,7 @@ async function readJson(request) {
 }
 async function currentUser(request, env) {
   const raw = request.headers.get("Cookie") || "";
-  const match = raw.match(/(?:^|;\\s*)physlab_session=([a-f0-9]{64})(?:;|$)/);
+  const match = raw.match(/(?:^|;\s*)physlab_session=([a-f0-9]{64})(?:;|$)/);
   if (!match) return null;
   const tokenHash = await sha256(match[1]);
   const row = await env.DB.prepare(
@@ -132,7 +132,7 @@ async function api(request, env) {
 
   if (path === "/api/logout" && method === "POST") {
     const raw = request.headers.get("Cookie") || "";
-    const match = raw.match(/(?:^|;\\s*)physlab_session=([a-f0-9]{64})(?:;|$)/);
+    const match = raw.match(/(?:^|;\s*)physlab_session=([a-f0-9]{64})(?:;|$)/);
     if (match) await env.DB.prepare("DELETE FROM sessions WHERE token_hash=?").bind(await sha256(match[1])).run();
     return json({ ok: true }, 200, { "set-cookie": clearCookie() });
   }
