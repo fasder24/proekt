@@ -26,6 +26,7 @@ async function loadExamState(){
   const merged=mergeState(local,r.data.state);
   localStorage.setItem('physlab_exam_state',JSON.stringify(merged));
   if(window.PHYSLAB_EXAM_API?.setCloudState)window.PHYSLAB_EXAM_API.setCloudState(merged);
+  await saveExamState(merged);
   window.dispatchEvent(new CustomEvent('physlab:cloud-state-loaded',{detail:merged}));
  } else {
   const local=(()=>{try{return JSON.parse(localStorage.getItem('physlab_exam_state')||'null')}catch{return defaults}})();
