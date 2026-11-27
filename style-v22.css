@@ -323,3 +323,5 @@ header,main,footer{position:relative;z-index:1}
  mix-blend-mode:screen;opacity:.29!important}
 @media(max-width:700px){#hero3d{opacity:.16!important}}
 @media(prefers-reduced-motion:reduce){#sky{opacity:.42!important}}
+
+.hero{background:linear-gradient(112deg,rgba(26,30,32,.88) 0%,rgba(23,27,29,.78) 58%,rgba(20,23,25,.86) 100%)!important}
