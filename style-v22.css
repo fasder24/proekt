@@ -325,3 +325,80 @@ header,main,footer{position:relative;z-index:1}
 @media(prefers-reduced-motion:reduce){#sky{opacity:.42!important}}
 
 .hero{background:linear-gradient(112deg,rgba(26,30,32,.88) 0%,rgba(23,27,29,.78) 58%,rgba(20,23,25,.86) 100%)!important}
+
+
+/* v27 — soften contrast specifically inside the Laboratory workspace */
+.lab{
+  --ac:#89969d;--ac2:#aab5bb;--ac3:#64727a;
+  color:#d4d9d9!important;
+}
+.lab>.card,.lab-main,.lab-side,.lab-map,.lab .card{
+  background:#171c1f!important;
+  border-color:rgba(183,195,200,.075)!important;
+  box-shadow:0 8px 24px rgba(0,0,0,.10)!important;
+}
+.lab canvas,.lab-main canvas,#liveChart,#homeLabCanvas{
+  background:#121719!important;
+  border:1px solid rgba(183,195,200,.075)!important;
+  box-shadow:none!important;filter:none!important;
+}
+.lab .science-hud{
+  background:rgba(20,26,29,.88)!important;
+  border-color:rgba(183,195,200,.10)!important;
+  color:#aeb8bc!important;
+}
+.lab .science-hud span,.lab .science-hud span i{color:#91a99a!important;background:#91a99a!important}
+.lab .science-hud b{color:#d6dcdd!important}
+.lab .chart-title,.lab .quick-visual-head{color:#8e999e!important}
+.lab .chart-title b,.lab .quick-results b{color:#b5bec2!important}
+.lab .chart-title span,.lab .live-dot{color:#91a99a!important}
+.lab .ctrls label,.lab label,.lab .quick-controls label{color:#a2adaf!important}
+.lab .ctrls label b,.lab label b{color:#d0d7d8!important}
+.lab .res div,.lab .quick-results div{
+  background:#1b2225!important;
+  border-color:rgba(183,195,200,.07)!important;
+  color:#9aa5a8!important;
+}
+.lab .res b{color:#c4ccce!important}
+.lab .formula,.lab .bw-hint{
+  background:#1b2225!important;color:#b9c2c4!important;
+  border-left-color:#69777e!important;
+}
+.lab button,.lab .btnrow button,.lab .ctrls button{
+  background:#20282c!important;color:#c2cbce!important;
+  border-color:rgba(183,195,200,.11)!important;box-shadow:none!important;
+}
+.lab button:hover,.lab .btnrow button:hover,.lab .ctrls button:hover{
+  background:#283237!important;border-color:rgba(183,195,200,.19)!important;
+}
+.lab button.p,.lab button.primary,.lab .bw-button,.lab .submit-btn{
+  background:#596970!important;color:#edf0f0!important;
+  border-color:#687980!important;
+}
+.lab button.p:hover,.lab button.primary:hover,.lab .bw-button:hover,.lab .submit-btn:hover{
+  background:#65767d!important;
+}
+.lab input,.lab select,.lab textarea{
+  background:#12181b!important;color:#d0d7d8!important;
+  border-color:rgba(183,195,200,.12)!important;
+}
+.lab input:focus,.lab select:focus,.lab textarea:focus{
+  border-color:#718087!important;outline-color:#718087!important;
+  box-shadow:0 0 0 2px rgba(137,150,157,.075)!important;
+}
+.lab input[type=range]{accent-color:#89969d!important}
+.lab .map-group,.lab .map-node{
+  background:#1b2225!important;border-color:rgba(183,195,200,.075)!important;
+}
+.lab .map-group h3,.lab .map-node span{color:#aeb9bd!important}
+.lab .map-node{color:#b8c1c3!important}
+.lab .map-node:hover{background:#222c30!important;border-color:rgba(183,195,200,.16)!important}
+.lab .bw-label,.lab .bw-kicker,.lab .eyebrow,.lab .tag{color:#98a5aa!important}
+.lab .bw-stamp{border-color:#64727a!important;color:#8d999e!important}
+.lab .bw-stamp b,.lab .bw-quiet{color:#aeb9bd!important}
+.lab .bw-progress-line{background:#293236!important}
+.lab .bw-progress-line div{background:#718087!important}
+.lab .bw-ach.earned{background:#222c30!important;border-color:rgba(183,195,200,.14)!important;color:#b5c0c4!important}
+.lab .bw-journal-action{background:#20282c!important;color:#b5c0c4!important;border-color:rgba(183,195,200,.13)!important}
+.lab .card.click::before{background:linear-gradient(90deg,transparent,rgba(183,195,200,.13),transparent)!important}
+.lab .card.click:hover,.lab .labcard:hover{border-color:rgba(183,195,200,.16)!important}
