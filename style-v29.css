@@ -252,3 +252,40 @@ input:focus,select:focus,textarea:focus{outline:2px solid rgba(40,123,73,.18)!im
  .stats{gap:18px!important}
 }
 @media(prefers-reduced-motion:reduce){.view.on{animation:none!important}*{scroll-behavior:auto!important;transition:none!important}}
+
+
+/* v29.1 palette lock — one emerald accent, no legacy gold */
+:root,:root[data-theme="light"],:root[data-theme="dark"]{
+ --bg:#f1f3ef!important;--bg2:#e9ede8!important;
+ --tx:#1d2921!important;--mut:#68766c!important;
+ --card:#ffffff!important;--card2:#f7f9f6!important;
+ --bd:transparent!important;--grid:rgba(35,65,45,.055)!important;
+ --ac:#287b49!important;--ac2:#398c58!important;--ac3:#174d30!important;
+ --glow:transparent!important;--glow2:transparent!important;
+ --ok:#287b49!important;--warn:#287b49!important;
+ color-scheme:light!important;
+}
+html,body{background:#f1f3ef!important;color:#1d2921!important}
+.logo,.hero h1 span,.stats b,.daily-tag,.tag,.eyebrow,.hero-kicker,
+.bw-kicker,.bw-label,.catalog-list-heading span,.chart-title span,
+.live-dot,.prof-stats b,.lab .res b{
+ color:#287b49!important;-webkit-text-fill-color:#287b49!important;
+ background-image:none!important;text-shadow:none!important;filter:none!important;
+}
+.hero h1 span{color:#9cdbac!important;-webkit-text-fill-color:#9cdbac!important}
+.logo{color:#f1f6f1!important;-webkit-text-fill-color:#f1f6f1!important}
+.daily-tag,.tag,.eyebrow,.bw-kicker,.bw-label,.catalog-list-heading span{color:#287b49!important}
+button.p,.primary,.submit-btn,.bw-button,.chip.on,button.chip.on{
+ background:#287b49!important;background-image:none!important;color:#fff!important;
+}
+button.p:hover,.primary:hover,.submit-btn:hover,.bw-button:hover{background:#1d663a!important}
+.hero{background:radial-gradient(ellipse at 82% 48%,rgba(67,137,82,.18),transparent 42%),linear-gradient(115deg,#19271d 0%,#1b2b20 56%,#203b28 100%)!important}
+.daily{background:#24372a!important;color:#eef5ef!important}
+.daily-tag{color:#9cdbac!important;-webkit-text-fill-color:#9cdbac!important}
+.card,.labcard,.quick-lab,.quick-visual,.live-chart-wrap,.bw-panel,.prof-box,
+.palette-box,.modal-box,.lab-map,.lab>.card,.lab>div.card{
+ border-color:transparent!important;outline:0!important;
+}
+input,select,textarea{accent-color:#287b49!important}
+input[type=range],progress{accent-color:#287b49!important}
+::selection{background:#cce7d3!important;color:#173b25!important}
