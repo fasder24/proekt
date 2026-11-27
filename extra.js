@@ -170,8 +170,8 @@ $('resetFav')&&($('resetFav').onclick=()=>{if(confirm('Очистить избр
   for(const p of P){
    const dm=Math.hypot(p.x-mx,p.y-my);
    const pulse=.78+Math.sin(p.phase+(performance.now()||0)*.0007)*.12;
-   g.fillStyle='rgba(205,215,222,'+Math.min(.78,pulse+(dm<pointerRadius?.18:0)).toFixed(3)+')';
-   g.beginPath();g.arc(p.x,p.y,p.r+(dm<pointerRadius?.35:0),0,Math.PI*2);g.fill();
+   g.fillStyle='rgba(205,215,222,'+Math.min(.78,pulse+(dm < pointerRadius ? 0.18 : 0)).toFixed(3)+')';
+   g.beginPath();g.arc(p.x,p.y,p.r+(dm < pointerRadius ? 0.35 : 0),0,Math.PI*2);g.fill();
   }
  }
  function frame(){draw();if(!reduced)raf=requestAnimationFrame(frame);}
