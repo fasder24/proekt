@@ -90,7 +90,7 @@ $('authForm').onsubmit = async (e) => {
 
   if ([login, name, pass].some(looksDangerous)) { err.textContent = '⛔ Ввод содержит запрещённые символы (защита от инъекций).'; return; }
   if (!LOGIN_RE.test(login)) { err.textContent = 'Логин: 3–24 символа, только латиница, цифры и _'; return; }
-  if (pass.length < 6) { err.textContent = 'Пароль: минимум 6 символов'; return; }
+  if (pass.length < 8) { err.textContent = 'Пароль: минимум 8 символов'; return; }
   if (authMode === 'register' && !NAME_RE.test(name)) { err.textContent = 'Имя: 2–24 символа (буквы, пробел, дефис)'; return; }
 
   const path = authMode === 'register' ? '/api/register' : '/api/login';
@@ -146,14 +146,24 @@ function decodeJwt(token) {
   return JSON.parse(json);
 }
 
-function onGoogleCredential(resp) {
+async function onGoogleCredential(resp) {
   try {
-    const p = decodeJwt(resp.credential);
-    const name = (p.name || (p.email || '').split('@')[0] || 'Пользователь').slice(0, 24);
-    ME = { login: 'g_' + String(p.sub || '').slice(-8), name: name, email: p.email || '' };
-    window.__authed = true;
-    localStorage.setItem('physlab_user', JSON.stringify(ME));
-    afterLogin('Добро пожаловать, ' + ME.name + '!');
+    const server = await api('/api/google', {
+      method: 'POST',
+      body: JSON.stringify({ credential: resp.credential })
+    });
+    if (server && server.data && server.data.ok && server.data.user) {
+      ME = server.data.user;
+      window.__authed = true;
+      localStorage.setItem('physlab_user', JSON.stringify(ME));
+      await afterLogin('Добро пожаловать, ' + ME.name + '!');
+      return;
+    }
+    if (server) {
+      toast((server.data && server.data.error) || 'Не удалось подтвердить вход через Google');
+      return;
+    }
+    toast('Сервер авторизации недоступен. Попробуй позже.');
   } catch (e) {
     toast('Не удалось выполнить вход через Google');
   }
@@ -222,7 +232,7 @@ $('saveBtn') && ($('saveBtn').onclick = async () => {
   const cur = $('eCur').value, np = $('eNew').value;
   err.textContent = '';
   if (name.length < 2) { err.textContent = 'Введите имя (минимум 2 символа)'; return; }
-  if (np && np.length < 6) { err.textContent = 'Новый пароль: минимум 6 символов'; return; }
+  if (np && np.length < 8) { err.textContent = 'Новый пароль: минимум 8 символов'; return; }
   btn.disabled = true;
   const res = await api('/api/profile', {
     method: 'POST',
@@ -303,8 +313,11 @@ async function boot() {
   try { ME = JSON.parse(localStorage.getItem('physlab_user') || 'null'); } catch (e) { ME = null; }
 
   const me = await api('/api/me', { method: 'GET' });
-  if (me && me.data && me.data.user) { ME = me.data.user; }
-  else if (me && me.data && me.data.ok === false) { ME = null; localStorage.removeItem('physlab_user'); }
+  if (me && me.data && me.data.ok) {
+    ME = me.data.user || null;
+    if (ME) localStorage.setItem('physlab_user', JSON.stringify(ME));
+    else localStorage.removeItem('physlab_user');
+  }
 
   window.__authed = !!ME;
   applyAuth();

@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "proekt",
+  "main": "worker.js",
+  "compatibility_date": "2026-11-27",
+  "assets": {
+    "directory": "./",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "physlab-db",
+      "database_id": "b701ad20-2f5a-4812-a98b-5b92189720fa"
+    }
+  ],
+  "vars": {
+    "GOOGLE_CLIENT_ID": "789665231458-qc7v31ujmgcqmfd11av134rmihcks0gd.apps.googleusercontent.com"
+  }
+}
