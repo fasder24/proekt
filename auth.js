@@ -146,14 +146,30 @@ function decodeJwt(token) {
   return JSON.parse(json);
 }
 
-function onGoogleCredential(resp) {
+async function onGoogleCredential(resp) {
   try {
+    const server = await api('/api/google', {
+      method: 'POST',
+      body: JSON.stringify({ credential: resp.credential })
+    });
+    if (server && server.data && server.data.ok && server.data.user) {
+      ME = server.data.user;
+      window.__authed = true;
+      localStorage.setItem('physlab_user', JSON.stringify(ME));
+      await afterLogin('Добро пожаловать, ' + ME.name + '!');
+      return;
+    }
+    if (server) {
+      toast((server.data && server.data.error) || 'Не удалось подтвердить вход через Google');
+      return;
+    }
+    // Если API временно недоступен, сохраняем прежний локальный режим.
     const p = decodeJwt(resp.credential);
     const name = (p.name || (p.email || '').split('@')[0] || 'Пользователь').slice(0, 24);
     ME = { login: 'g_' + String(p.sub || '').slice(-8), name: name, email: p.email || '' };
     window.__authed = true;
     localStorage.setItem('physlab_user', JSON.stringify(ME));
-    afterLogin('Добро пожаловать, ' + ME.name + '!');
+    await afterLogin('Вход выполнен (локальный режим)');
   } catch (e) {
     toast('Не удалось выполнить вход через Google');
   }
