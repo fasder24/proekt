@@ -3,14 +3,18 @@ const $=id=>document.getElementById(id);
 const api=async(path,options={})=>{try{const r=await fetch(path,{credentials:'same-origin',headers:{'Content-Type':'application/json'},...options});const data=await r.json();return {ok:r.ok,data}}catch(e){return null}};
 let busy=false,dirty=false,adminAllowed=false,pendingState=null;
 const defaults={answers:[],history:[],variants:[],topics:{},today:{date:'',count:0},streak:0,lastDay:''};
-function mergeState(local,remote){
- const a=local||defaults,b=remote||defaults;
- const uniq=(arr)=>{const m=new Map();for(const x of [...(Array.isArray(arr)?arr:[])]){const k=x&&((x.date||'')+'|'+(x.id??'')+'|'+(x.source||'')+'|'+(x.text||''));m.set(k,x)}return [...m.values()]};
- const answers=uniq([...(a.answers||[]),...(b.answers||[])]).slice(-5000);
- const variants=uniq([...(a.variants||[]),...(b.variants||[])]).slice(-500);
- const topics={};for(const x of answers){if(!x||!x.topic)continue;topics[x.topic]??={right:0,total:0};topics[x.topic].total++;if(x.correct)topics[x.topic].right++}
- const latest=[...(a.history||[]),...(b.history||[])].sort((x,y)=>String(y.date||'').localeCompare(String(x.date||''))).slice(0,100);
- return {answers,variants,topics,history:latest,today:(a.today?.date||'')>=(b.today?.date||'')?a.today:b.today,streak:Math.max(a.streak||0,b.streak||0),lastDay:(a.lastDay||'')>(b.lastDay||'')?a.lastDay:b.lastDay};
+const defaults={answers:[],history:[],variants:[],topics:{},today:{date:'',count:0},streak:0,lastDay:''};
+function cleanState(state){
+ const s=state&&typeof state==='object'?state:{};
+ return {
+  answers:Array.isArray(s.answers)?s.answers:[],
+  history:Array.isArray(s.history)?s.history:[],
+  variants:Array.isArray(s.variants)?s.variants:[],
+  topics:s.topics&&typeof s.topics==='object'?s.topics:{},
+  today:s.today&&typeof s.today==='object'?s.today:{date:'',count:0},
+  streak:Number(s.streak)||0,
+  lastDay:String(s.lastDay||'')
+ };
 }
 async function saveExamState(state){
  if(!window.__authed)return;pendingState=state;if(busy)return;busy=true;dirty=true;
@@ -21,17 +25,12 @@ async function loadExamState(){
  if(!window.__authed)return;
  const r=await api('/api/exam-state');
  if(!r||!r.ok||!r.data?.ok){setStatus('Серверная синхронизация пока недоступна');return}
- if(r.data.state){
-  const local=(()=>{try{return JSON.parse(localStorage.getItem('physlab_exam_state')||'null')}catch{return null}})();
-  const merged=mergeState(local,r.data.state);
-  localStorage.setItem('physlab_exam_state',JSON.stringify(merged));
-  if(window.PHYSLAB_EXAM_API?.setCloudState)window.PHYSLAB_EXAM_API.setCloudState(merged);
-  await saveExamState(merged);
-  window.dispatchEvent(new CustomEvent('physlab:cloud-state-loaded',{detail:merged}));
- } else {
-  const local=(()=>{try{return JSON.parse(localStorage.getItem('physlab_exam_state')||'null')}catch{return defaults}})();
-  await saveExamState(local);
- }
+ // The server snapshot belongs to the authenticated account. Never merge the
+ // browser-wide legacy key into it: that key may contain another user's progress.
+ const accountState=cleanState(r.data.state||defaults);
+ localStorage.setItem('physlab_exam_state',JSON.stringify(accountState));
+ if(window.PHYSLAB_EXAM_API?.setCloudState)window.PHYSLAB_EXAM_API.setCloudState(accountState);
+ window.dispatchEvent(new CustomEvent('physlab:cloud-state-loaded',{detail:accountState}));
  setStatus('Синхронизировано с D1');
 }
 function setStatus(t){const n=$('cloudStatus');if(n)n.textContent=t}
