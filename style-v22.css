@@ -311,3 +311,15 @@ input[type=range]{accent-color:#9aa6ae!important}
 #clearSearch:not(:disabled){color:#c0c8ce!important;border-color:rgba(174,187,195,.22)!important}
 .search-shortcut .kbd{color:#c0c8ce!important;border-color:rgba(174,187,195,.18)!important}
 .skip-link{background:#dce2e6!important;color:#151a1d!important}
+
+
+/* v26 — seamless atom canvas and quiet interactive particle field */
+#sky{display:block!important;position:fixed!important;inset:0!important;width:100%!important;height:100%!important;
+ z-index:0!important;opacity:.72!important;pointer-events:none!important;background:transparent!important}
+header,main,footer{position:relative;z-index:1}
+.hero{overflow:hidden!important;isolation:isolate!important}
+#hero3d{border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;
+ border-radius:0!important;filter:grayscale(.32) brightness(.9) contrast(.94)!important;
+ mix-blend-mode:screen;opacity:.29!important}
+@media(max-width:700px){#hero3d{opacity:.16!important}}
+@media(prefers-reduced-motion:reduce){#sky{opacity:.42!important}}
