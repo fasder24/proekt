@@ -339,6 +339,8 @@ async function boot() {
   }
 
   const h = location.hash.slice(1);
+  window.dispatchEvent(new CustomEvent('physlab:auth-ready',{detail:{user:ME}}));
+
   if (['proj', 'pend', 'ohm', 'lab'].includes(h) || h.startsWith('lab-')) {
     if (window.__authed) {
       if (h === 'proj' || h === 'pend' || h === 'ohm') go(h);
