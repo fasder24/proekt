@@ -173,6 +173,10 @@ async function api(request, env) {
     const rows = await env.DB.prepare("SELECT u.name,s.answers_total,s.correct_total,s.variants_total,s.best_points FROM user_exam_state s JOIN users u ON u.login=s.user_login WHERE s.leaderboard_public=1 ORDER BY s.best_points DESC,s.correct_total DESC,s.answers_total DESC LIMIT 50").all();
     return json({ ok: true, leaderboard: (rows.results||[]).map((x,i)=>({ rank:i+1,name:x.name,answers:x.answers_total,correct:x.correct_total,accuracy:x.answers_total?Math.round(x.correct_total/x.answers_total*100):0,variants:x.variants_total,best_points:x.best_points })) });
   }
+  if (path === "/api/leaderboard-optin-state" && method === "GET") {
+    const row = await env.DB.prepare("SELECT leaderboard_public FROM user_exam_state WHERE user_login=?").bind(user.login).first();
+    return json({ ok:true, enabled:!!(row && row.leaderboard_public) });
+  }
   if (path === "/api/leaderboard-optin" && method === "POST") {
     let body; try { body = await readJson(request); } catch (e) { return json({ ok: false, error: "Некорректный запрос" }, 400); }
     await env.DB.prepare("UPDATE user_exam_state SET leaderboard_public=? WHERE user_login=?").bind(body.enabled ? 1 : 0,user.login).run();
