@@ -313,8 +313,11 @@ async function boot() {
   try { ME = JSON.parse(localStorage.getItem('physlab_user') || 'null'); } catch (e) { ME = null; }
 
   const me = await api('/api/me', { method: 'GET' });
-  if (me && me.data && me.data.user) { ME = me.data.user; }
-  else if (me && me.data && me.data.ok === false) { ME = null; localStorage.removeItem('physlab_user'); }
+  if (me && me.data && me.data.ok) {
+    ME = me.data.user || null;
+    if (ME) localStorage.setItem('physlab_user', JSON.stringify(ME));
+    else localStorage.removeItem('physlab_user');
+  }
 
   window.__authed = !!ME;
   applyAuth();
