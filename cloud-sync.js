@@ -60,8 +60,8 @@ async function loadAdmin(){
  const box=$('adminContent');if(!box)return;box.innerHTML='<p>Загружаем статистику…</p>';
  const r=await api('/api/admin/overview');
  if(!r||!r.ok||!r.data?.ok){box.innerHTML='<article class="panel"><b>Доступ закрыт</b><p>'+esc(r?.data?.error||'Не удалось проверить права')+'</p></article>';$('adminTop').innerHTML='';$('adminHint').textContent='Для доступа владелец проекта должен добавить свой логин в переменную Worker ADMIN_LOGINS (через Settings → Variables and Secrets).';return}
- adminAllowed=true;const d=r.data;
- box.innerHTML=[['Пользователи',d.users],['Активны за 30 дней',d.active30],['Решено заданий',d.answers],['Пробных вариантов',d.variants],['Средняя точность',d.avgAccuracy+'%']].map(x=>'<article class="metric-card"><span>'+x[0]+'</span><b>'+x[1]+'</b></article>').join('');
+ adminAllowed=true;document.getElementById('adminNav')?.removeAttribute('hidden');const d=r.data;
+ box.innerHTML=[['Пользователи',d.users],['Синхронизировали за 30 дней',d.active30],['Решено заданий',d.answers],['Пробных вариантов',d.variants],['Средняя точность',d.avgAccuracy+'%']].map(x=>'<article class="metric-card"><span>'+x[0]+'</span><b>'+x[1]+'</b></article>').join('');
  $('adminTop').innerHTML=(d.top||[]).length?'<div class="cloud-row cloud-head"><span>Ученик</span><span>Решено</span><span>Лучший результат</span></div>'+d.top.map(x=>'<div class="cloud-row"><b>'+esc(x.name)+'</b><span>'+x.answers_total+'</span><span>'+x.best_points+'%</span></div>').join(''):'<p>Пока нет учебной статистики.</p>';
  $('adminHint').textContent='Сводка рассчитана по данным аккаунтов, которые синхронизировали прогресс.';
 }
@@ -73,7 +73,7 @@ async function refresh(){
 window.PHYSLAB_CLOUD={saveExamState,refresh};
 window.addEventListener('physlab:auth-ready',async e=>{
  window.PHYSLAB_ME=e.detail?.user||null;
- if(window.__authed){await loadExamState();renderCabinet();const opt=$('leaderboardOptIn');if(opt){const r=await api('/api/leaderboard-optin-state');if(r?.data?.ok)opt.checked=!!r.data.enabled}}
+ if(window.__authed){await loadExamState();renderCabinet();await loadAdmin();const opt=$('leaderboardOptIn');if(opt){const r=await api('/api/leaderboard-optin-state');if(r?.data?.ok)opt.checked=!!r.data.enabled}}
  else setStatus('Войди в аккаунт для синхронизации');
 });
 window.addEventListener('physlab:cloud-state-loaded',renderCabinet);
