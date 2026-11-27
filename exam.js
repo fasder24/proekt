@@ -74,5 +74,6 @@ function drawCircuit(){const u=+$('voltage').value,r=+$('resistance').value,i=u/
 ['voltage','resistance'].forEach(id=>$(id).oninput=drawCircuit);
 document.querySelectorAll('[data-route]').forEach(a=>a.onclick=e=>{e.preventDefault();route(a.dataset.route);location.hash=a.dataset.route});document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{route(b.dataset.go);location.hash=b.dataset.go});$('topProfileBtn').onclick=()=>$('profileBtn').click();
 function init(){renderTopics();renderTaskFilters();renderTaskList();renderFormulas();renderStats();drawProjectile();drawCircuit();const r=location.hash.slice(1);route(document.getElementById('page-'+r)?r:'home');window.addEventListener('hashchange',()=>route(location.hash.slice(1)||'home'));if(!localStorage.getItem('physlab_exam_intro')){localStorage.setItem('physlab_exam_intro','1');toast('Добро пожаловать в новый PhysLab!')}}
+window.PHYSLAB_EXAM_API={getQuestions:()=>Q.map(q=>({...q,o:q.o.slice()})),startSession:(arr,source)=>{route('practice');startSession(arr,source||'review')}};
 init();
 })();
