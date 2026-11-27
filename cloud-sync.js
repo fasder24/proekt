@@ -3,6 +3,10 @@ const $=id=>document.getElementById(id);
 const api=async(path,options={})=>{const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),12000);try{const r=await fetch(path,{credentials:'same-origin',headers:{'Content-Type':'application/json'},...options,signal:controller.signal});const data=await r.json();return {ok:r.ok,data}}catch(e){return {ok:false,data:{error:e?.name==='AbortError'?'Сервер не ответил за 12 секунд. Проверь соединение и нажми «Обновить».':'Не удалось связаться с сервером.'}}}finally{clearTimeout(timer)}};
 let busy=false,dirty=false,adminAllowed=false,pendingState=null;
 const defaults={answers:[],history:[],variants:[],topics:{},today:{date:'',count:0},streak:0,lastDay:''};
+function cleanState(state){
+ const s=state&&typeof state==='object'?state:{};
+ return {answers:Array.isArray(s.answers)?s.answers:[],history:Array.isArray(s.history)?s.history:[],variants:Array.isArray(s.variants)?s.variants:[],topics:s.topics&&typeof s.topics==='object'?s.topics:{},today:s.today&&typeof s.today==='object'?s.today:{date:'',count:0},streak:Number(s.streak)||0,lastDay:String(s.lastDay||'')};
+}
 function mergeState(local,remote){
  const a=local||defaults,b=remote||defaults;
  const uniq=(arr)=>{const m=new Map();for(const x of [...(Array.isArray(arr)?arr:[])]){const k=x&&((x.date||'')+'|'+(x.id??'')+'|'+(x.source||'')+'|'+(x.text||''));m.set(k,x)}return [...m.values()]};
