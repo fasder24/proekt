@@ -104,3 +104,19 @@ body{background:radial-gradient(ellipse at 75% -20%,#17251a 0,transparent 42%),#
 /* Visual simulations gallery */
 .visual-lab-heading{display:flex;justify-content:space-between;align-items:end;gap:16px;margin:30px 0 16px}.visual-lab-heading h2{font-size:23px;margin:7px 0}.visual-lab-heading p{font-size:11px;color:#91a095;margin:0}.visual-lab-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.visual-card{min-width:0;overflow:hidden;padding:19px;background:linear-gradient(145deg,#17221a,#121a14)!important;border:1px solid #2b3c2f!important;box-shadow:0 16px 38px #0003!important}.visual-wide{grid-column:1/-1}.visual-card-head{display:flex;justify-content:space-between;gap:12px;align-items:start}.visual-kicker{font:9px "DM Mono";letter-spacing:1.3px;color:#83ad8c}.visual-card h3{font-size:16px;margin:7px 0 3px}.visual-card p{font-size:10px;color:#89998e;margin:0}.visual-live{font:9px "DM Mono";color:#8fc69b;display:flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid #35523c;border-radius:99px}.visual-live i{width:6px;height:6px;border-radius:50%;background:#78bd87;box-shadow:0 0 12px #78bd87;animation:visualPulse 1.5s infinite}@keyframes visualPulse{50%{opacity:.35;box-shadow:0 0 2px #78bd87}}.visual-canvas{display:block;width:100%;height:auto;aspect-ratio:2.33/1;margin:15px 0 12px;border:1px solid #2c4031;border-radius:12px;background:radial-gradient(ellipse at 50% 50%,#1a2b20,#0d1510 75%)}.visual-controls{display:flex;gap:14px;align-items:end;flex-wrap:wrap}.visual-controls label{flex:1;min-width:130px;display:grid;gap:7px;color:#93a397;font-size:10px}.visual-controls label b{color:#c5dfca;font:600 11px "DM Mono"}.visual-controls input[type=range]{width:100%;accent-color:#80b88b}.visual-toggle{border:1px solid #45664c;background:#203729;color:#b6d9bd;border-radius:9px;padding:9px 13px;font-size:10px;cursor:pointer}.visual-readouts{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid #29392e}.visual-readouts span{flex:1;min-width:100px;color:#87978b;font-size:9px}.visual-readouts b{display:block;color:#d4e4d7;font:600 12px "DM Mono";margin-top:4px}
 @media(max-width:760px){.visual-lab-grid{grid-template-columns:1fr}.visual-wide{grid-column:auto}.visual-lab-heading{align-items:start;flex-direction:column}.visual-card{padding:14px}.visual-controls{gap:10px}.visual-controls label{min-width:calc(50% - 10px)}.visual-toggle{width:100%}.visual-readouts{gap:8px}}
+
+
+/* Layout correction + refined page scrolling */
+.sidebar{position:fixed!important;inset:0 auto 0 0;z-index:10}
+.workspace{position:relative;z-index:1;margin-left:248px;min-height:100svh;max-width:1800px}
+html{scroll-behavior:smooth;scroll-padding-top:24px;scrollbar-width:thin;scrollbar-color:#526b55 #101711}
+body{overflow-x:hidden;overscroll-behavior-y:contain}
+::-webkit-scrollbar{width:11px;height:9px}
+::-webkit-scrollbar-track{background:#101711;border-left:1px solid #202d23}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#526b55,#354a39);border:2px solid #101711;border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:#718c70}
+::selection{background:#456b4b;color:#f0f5ef}
+#physlab-stars{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.62}
+@media(max-width:1050px){.workspace{margin-left:210px}}
+@media(max-width:760px){.sidebar{position:sticky!important;inset:auto;width:100%;height:auto;z-index:10}.workspace{margin:0;min-height:100svh}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
