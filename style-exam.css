@@ -107,7 +107,7 @@ body{background:radial-gradient(ellipse at 75% -20%,#17251a 0,transparent 42%),#
 
 
 /* Layout correction + refined page scrolling */
-.sidebar{position:fixed!important;inset:0 auto 0 0;z-index:10}
+.sidebar{position:fixed!important;inset:0 auto 0 0;z-index:10;height:100vh;height:100dvh;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#465b49 #101711}.sidebar::-webkit-scrollbar{width:7px}.sidebar::-webkit-scrollbar-track{background:#101711}.sidebar::-webkit-scrollbar-thumb{background:#465b49;border:1px solid #101711;border-radius:99px}.sidebar .sidebar-bottom{margin-top:auto;flex-shrink:0}
 .workspace{position:relative;z-index:1;margin-left:248px;min-height:100svh;max-width:1800px}
 html{scroll-behavior:smooth;scroll-padding-top:24px;scrollbar-width:thin;scrollbar-color:#526b55 #101711}
 body{overflow-x:hidden;overscroll-behavior-y:contain}
