@@ -37,11 +37,11 @@ function sameOrigin(request) {
   const origin = request.headers.get("Origin");
   return !origin || origin === new URL(request.url).origin;
 }
-async function readJson(request) {
+async function readJson(request, maxBytes = 12000) {
   const type = request.headers.get("content-type") || "";
   if (!type.includes("application/json")) throw new Error("Ожидается JSON");
   const text = await request.text();
-  if (text.length > 12000) throw new Error("Слишком большой запрос");
+  if (text.length > maxBytes) throw new Error("Слишком большой запрос");
   return JSON.parse(text || "{}");
 }
 async function currentUser(request, env) {
@@ -153,7 +153,7 @@ async function api(request, env) {
     return json({ ok: true, state, updated_at: row ? row.updated_at : null });
   }
   if (path === "/api/exam-state" && method === "PUT") {
-    let body; try { body = await readJson(request); } catch (e) { return json({ ok: false, error: "Некорректный запрос" }, 400); }
+    let body; try { body = await readJson(request, 200000); } catch (e) { return json({ ok: false, error: "Некорректный запрос" }, 400); }
     const state = body.state;
     if (!state || typeof state !== "object" || Array.isArray(state)) return json({ ok: false, error: "Некорректные данные прогресса" }, 400);
     const answers = Array.isArray(state.answers) ? state.answers.slice(-5000) : [];
