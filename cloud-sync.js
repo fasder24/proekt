@@ -1,6 +1,6 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
-const api=async(path,options={})=>{try{const r=await fetch(path,{credentials:'same-origin',headers:{'Content-Type':'application/json'},...options});const data=await r.json();return {ok:r.ok,data}}catch(e){return null}};
+const api=async(path,options={})=>{const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),12000);try{const r=await fetch(path,{credentials:'same-origin',headers:{'Content-Type':'application/json'},...options,signal:controller.signal});const data=await r.json();return {ok:r.ok,data}}catch(e){return {ok:false,data:{error:e?.name==='AbortError'?'Сервер не ответил за 12 секунд. Проверь соединение и нажми «Обновить».':'Не удалось связаться с сервером.'}}}finally{clearTimeout(timer)}};
 let busy=false,dirty=false,adminAllowed=false,pendingState=null;
 const defaults={answers:[],history:[],variants:[],topics:{},today:{date:'',count:0},streak:0,lastDay:''};
 function mergeState(local,remote){
@@ -20,18 +20,13 @@ async function saveExamState(state){
 async function loadExamState(){
  if(!window.__authed)return;
  const r=await api('/api/exam-state');
- if(!r||!r.ok||!r.data?.ok){setStatus('Серверная синхронизация пока недоступна');return}
- if(r.data.state){
-  const local=(()=>{try{return JSON.parse(localStorage.getItem('physlab_exam_state')||'null')}catch{return null}})();
-  const merged=mergeState(local,r.data.state);
-  localStorage.setItem('physlab_exam_state',JSON.stringify(merged));
-  if(window.PHYSLAB_EXAM_API?.setCloudState)window.PHYSLAB_EXAM_API.setCloudState(merged);
-  await saveExamState(merged);
-  window.dispatchEvent(new CustomEvent('physlab:cloud-state-loaded',{detail:merged}));
- } else {
-  const local=(()=>{try{return JSON.parse(localStorage.getItem('physlab_exam_state')||'null')}catch{return defaults}})();
-  await saveExamState(local);
- }
+ if(!r||!r.ok||!r.data?.ok){setStatus(r?.data?.error||'Серверная синхронизация пока недоступна');return}
+ // D1 is authoritative for the signed-in account. Do not merge browser-wide
+ // legacy localStorage data: it can contain another user's or stale progress.
+ const accountState=cleanState(r.data.state||defaults);
+ localStorage.setItem('physlab_exam_state',JSON.stringify(accountState));
+ if(window.PHYSLAB_EXAM_API?.setCloudState)window.PHYSLAB_EXAM_API.setCloudState(accountState);
+ window.dispatchEvent(new CustomEvent('physlab:cloud-state-loaded',{detail:accountState}));
  setStatus('Синхронизировано с D1');
 }
 function setStatus(t){const n=$('cloudStatus');if(n)n.textContent=t}
