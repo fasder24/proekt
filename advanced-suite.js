@@ -6,7 +6,8 @@ const prefs=read('physlab_next_prefs',{accent:'#9b8b63',motion:true,particles:tr
 const accent=()=>document.documentElement.style.setProperty('--next-accent',prefs.accent);
 function style(){const s=document.createElement('style');s.textContent=[
 ':root{--next-accent:'+prefs.accent+'}',
-'#physlab-stars{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;opacity:.4}',
+'#physlab-stars{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.4}',
+'.workspace,.sidebar{position:relative;z-index:1}',
 '.next-nav{margin-top:10px!important;color:#c5d0c6!important}',
 '#page-labx{animation:nextIn .4s ease both}@keyframes nextIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}',
 '.next-hero{padding:26px;border:1px solid #344238;border-radius:17px;background:radial-gradient(ellipse at 80% 10%,#29352a,transparent 45%),linear-gradient(135deg,#111914,#0b100d 70%);margin-bottom:18px;overflow:hidden}',
