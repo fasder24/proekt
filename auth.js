@@ -90,7 +90,7 @@ $('authForm').onsubmit = async (e) => {
 
   if ([login, name, pass].some(looksDangerous)) { err.textContent = '⛔ Ввод содержит запрещённые символы (защита от инъекций).'; return; }
   if (!LOGIN_RE.test(login)) { err.textContent = 'Логин: 3–24 символа, только латиница, цифры и _'; return; }
-  if (pass.length < 6) { err.textContent = 'Пароль: минимум 6 символов'; return; }
+  if (pass.length < 8) { err.textContent = 'Пароль: минимум 8 символов'; return; }
   if (authMode === 'register' && !NAME_RE.test(name)) { err.textContent = 'Имя: 2–24 символа (буквы, пробел, дефис)'; return; }
 
   const path = authMode === 'register' ? '/api/register' : '/api/login';
@@ -163,13 +163,7 @@ async function onGoogleCredential(resp) {
       toast((server.data && server.data.error) || 'Не удалось подтвердить вход через Google');
       return;
     }
-    // Если API временно недоступен, сохраняем прежний локальный режим.
-    const p = decodeJwt(resp.credential);
-    const name = (p.name || (p.email || '').split('@')[0] || 'Пользователь').slice(0, 24);
-    ME = { login: 'g_' + String(p.sub || '').slice(-8), name: name, email: p.email || '' };
-    window.__authed = true;
-    localStorage.setItem('physlab_user', JSON.stringify(ME));
-    await afterLogin('Вход выполнен (локальный режим)');
+    toast('Сервер авторизации недоступен. Попробуй позже.');
   } catch (e) {
     toast('Не удалось выполнить вход через Google');
   }
@@ -238,7 +232,7 @@ $('saveBtn') && ($('saveBtn').onclick = async () => {
   const cur = $('eCur').value, np = $('eNew').value;
   err.textContent = '';
   if (name.length < 2) { err.textContent = 'Введите имя (минимум 2 символа)'; return; }
-  if (np && np.length < 6) { err.textContent = 'Новый пароль: минимум 6 символов'; return; }
+  if (np && np.length < 8) { err.textContent = 'Новый пароль: минимум 8 символов'; return; }
   btn.disabled = true;
   const res = await api('/api/profile', {
     method: 'POST',
