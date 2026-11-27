@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
 const api=async(path,options={})=>{try{const r=await fetch(path,{credentials:'same-origin',headers:{'Content-Type':'application/json'},...options});const data=await r.json();return {ok:r.ok,data}}catch(e){return null}};
-let busy=false,dirty=false,adminAllowed=false;
+let busy=false,dirty=false,adminAllowed=false,pendingState=null;
 const defaults={answers:[],history:[],variants:[],topics:{},today:{date:'',count:0},streak:0,lastDay:''};
 function mergeState(local,remote){
  const a=local||defaults,b=remote||defaults;
@@ -13,10 +13,9 @@ function mergeState(local,remote){
  return {answers,variants,topics,history:latest,today:(a.today?.date||'')>=(b.today?.date||'')?a.today:b.today,streak:Math.max(a.streak||0,b.streak||0),lastDay:(a.lastDay||'')>(b.lastDay||'')?a.lastDay:b.lastDay};
 }
 async function saveExamState(state){
- if(busy||!window.__authed)return;busy=true;dirty=true;
- const r=await api('/api/exam-state',{method:'PUT',body:JSON.stringify({state})});
- dirty=!(r&&r.ok&&r.data&&r.data.ok);busy=false;
- const s=$('cloudStatus');if(s)s.textContent=dirty?'Не удалось синхронизировать':'Синхронизировано';
+ if(!window.__authed)return;pendingState=state;if(busy)return;busy=true;dirty=true;
+ while(pendingState){const next=pendingState;pendingState=null;const r=await api('/api/exam-state',{method:'PUT',body:JSON.stringify({state:next})});dirty=!(r&&r.ok&&r.data&&r.data.ok);}
+ busy=false;const s=$('cloudStatus');if(s)s.textContent=dirty?'Не удалось синхронизировать':'Синхронизировано';
 }
 async function loadExamState(){
  if(!window.__authed)return;
@@ -26,8 +25,8 @@ async function loadExamState(){
   const local=(()=>{try{return JSON.parse(localStorage.getItem('physlab_exam_state')||'null')}catch{return null}})();
   const merged=mergeState(local,r.data.state);
   localStorage.setItem('physlab_exam_state',JSON.stringify(merged));
-  if(window.PHYSLAB_EXAM_CLOUD_RELOAD)window.PHYSLAB_EXAM_CLOUD_RELOAD();
-  else window.dispatchEvent(new CustomEvent('physlab:cloud-state-loaded',{detail:merged}));
+  if(window.PHYSLAB_EXAM_API?.setCloudState)window.PHYSLAB_EXAM_API.setCloudState(merged);
+  window.dispatchEvent(new CustomEvent('physlab:cloud-state-loaded',{detail:merged}));
  } else {
   const local=(()=>{try{return JSON.parse(localStorage.getItem('physlab_exam_state')||'null')}catch{return defaults}})();
   await saveExamState(local);
