@@ -124,6 +124,8 @@ async function localAuth(login, name, pass, err) {
 }
 
 async function afterLogin(msg) {
+  window.PHYSLAB_ME = ME;
+  window.dispatchEvent(new CustomEvent('physlab:auth-ready',{detail:{user:ME}}));
   closeAuth();
   applyAuth();
   await Promise.all([loadFavs(), loadProgress()]);
@@ -320,6 +322,7 @@ async function boot() {
   }
 
   window.__authed = !!ME;
+  window.PHYSLAB_ME = ME;
   applyAuth();
 
   if (API_ONLINE !== false && ME) await Promise.all([loadFavs(), loadProgress()]);
