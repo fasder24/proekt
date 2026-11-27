@@ -269,3 +269,12 @@ button.chip:focus-visible{outline:2px solid #9b8965;outline-offset:2px}
 @media(prefers-reduced-motion:reduce){
  .view.on{animation:none}
 }
+
+
+/* v24: center the 3D atom in the hero, behind the copy */
+.hero{position:relative!important;isolation:isolate}
+#hero3d{left:50%!important;right:auto!important;top:50%!important;width:min(66%,760px)!important;height:108%!important;transform:translate(-50%,-50%)!important;opacity:.34!important;filter:grayscale(.38) sepia(.24) saturate(.72)!important;z-index:0!important}
+.hero-in{position:relative!important;z-index:2!important}
+@media(max-width:700px){
+  #hero3d{left:50%!important;right:auto!important;top:50%!important;width:112%!important;height:100%!important;transform:translate(-50%,-50%)!important;opacity:.19!important}
+}
